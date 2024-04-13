@@ -43,9 +43,3 @@ Message Types:
 
     aes key -
     type = "aes_key", key = aes key, iv = iv
-
-Database fields:
-    UName = The name of the user, not unique, changeable, Text (30)
-    Password = The password for the user, should be hushed, Text (30)
-    Email = User email, unique, Text (30)
-    UID = User ID, auto-increment, unique
