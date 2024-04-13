@@ -1,0 +1,51 @@
+Message Types:
+    sign up -
+    type="signup",  email=string, password=string, uname=string
+
+    log in -
+    type="login", email=string, password=string
+
+    message -
+    type="message", text=string
+
+    status -
+    type="status", status=bool, text=string
+
+    broadcast -
+    type = "broadcast", title=string
+
+    video search request -
+    type = "search", keyword=string
+
+    search result response -
+    type = "result", results=list
+
+    watch request -
+    type = "watch", vid=int
+
+    stream frame -
+    type = "frame", "data"=jpeg_bytes
+
+    audio -
+    type = "audio", "data"=audio
+
+    stream closed -
+    type = "close"
+
+    like -
+    type="like"
+
+    dislike -
+    type="dislike"
+
+    rsa key -
+    type="rsa_key", key = rsa key
+
+    aes key -
+    type = "aes_key", key = aes key, iv = iv
+
+Database fields:
+    UName = The name of the user, not unique, changeable, Text (30)
+    Password = The password for the user, should be hushed, Text (30)
+    Email = User email, unique, Text (30)
+    UID = User ID, auto-increment, unique
