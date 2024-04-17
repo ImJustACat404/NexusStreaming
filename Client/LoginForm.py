@@ -1,3 +1,5 @@
+__author__ = "Ido Senn"
+
 from pygame_widgets.textbox import TextBox
 from pygame_widgets.button import Button
 from PygameObjects import Label, Image

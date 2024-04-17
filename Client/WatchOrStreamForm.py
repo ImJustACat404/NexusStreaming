@@ -1,3 +1,5 @@
+__author__ = "Ido Senn"
+
 from pygame_widgets.button import Button
 from UIConst import *
 

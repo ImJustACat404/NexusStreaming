@@ -1,3 +1,5 @@
+__author__ = "Ido Senn"
+
 import cv2
 import pyautogui
 import numpy as np

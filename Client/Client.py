@@ -1,4 +1,5 @@
-import time
+__author__ = "Ido Senn"
+
 import pygame
 import Forms
 from LoginForm import LogInForm
@@ -90,8 +91,8 @@ def video_play_stream(server_socket, aes_cypher):
 def event_innit(window_forms):
     """
     Initializing click events for all the buttons
-    :param window_forms: A dictionary 
-    :return:
+    :param window_forms: A dictionary containing all the window forms
+    :type window_forms: dict
     """
     window_forms["signup"].button_event_innit(
         lambda: Forms.change_form(window_forms["signup"], window_forms["login"]),
@@ -111,6 +112,14 @@ def event_innit(window_forms):
 
 
 def start_ui(server_socket, aes_cypher):
+    """
+    A function that starts the main loop of PyGame
+    :param server_socket: A socket for server communication
+    :type server_socket: socket.socket
+    :param aes_cypher: An object used to encrypt and decrypt messages using AES.
+    :type aes_cypher: AESCypher
+    :return:
+    """
     global WINDOW_FORMS, STREAM_OPEN
     # set up forms
     window_forms = {
@@ -142,6 +151,9 @@ def start_ui(server_socket, aes_cypher):
 
 
 def main():
+    """
+    The main function of the program. Runs when the program starts. Initializing a secure connection with the server.
+    """
     print("Connecting to server . . .")
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     server_socket.connect((SERVER_IP, SERVER_PORT))
@@ -152,6 +164,7 @@ def main():
     aes_key = AESEncrypt.generate_key()
     aes_iv = AESEncrypt.generate_iv()
     rsa_cypher = PKCS1_OAEP.new(public_rsa_key)
+    print(type(rsa_cypher))
     message = {"type": "aes_key", "key": aes_key, "iv": aes_iv}
     Communication.send_message_rsa(server_socket, message, rsa_cypher)
     aes_cypher = AESCypher(aes_iv, aes_key)

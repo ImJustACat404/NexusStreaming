@@ -1,3 +1,5 @@
+__author__ = "Ido Senn"
+
 import sqlite3
 import hashlib
 import os

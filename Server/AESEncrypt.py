@@ -1,3 +1,5 @@
+__author__ = "Ido Senn"
+
 from Crypto.Cipher import AES
 from Crypto.Util.Padding import pad, unpad
 from Crypto.Random import get_random_bytes

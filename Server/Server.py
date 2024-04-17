@@ -1,3 +1,5 @@
+__author__ = "Ido Senn"
+
 import UserDB
 import VideoDB
 import Communication
@@ -6,6 +8,7 @@ import threading
 import select
 from ServerObjects import User
 from Crypto.Cipher import PKCS1_OAEP
+from Crypto.PublicKey import RSA
 from AESEncrypt import AESCypher
 
 
@@ -174,10 +177,10 @@ def connect(client_socket, aes_cypher):
 
 
 def establish_secure_connection(client_socket):
-    private_key, public_key, rsa_key = Communication.generate_rsa_keys()
+    private_key, public_key = Communication.generate_rsa_keys()
     message = {"type": "rsa_key", "key": public_key}
     Communication.send_message_unsecure(client_socket, message)
-    rsa_cypher = PKCS1_OAEP.new(rsa_key)
+    rsa_cypher = PKCS1_OAEP.new(RSA.importKey(private_key))
     message = Communication.recv_message_rsa(client_socket, rsa_cypher)
     aes_key = message["key"]
     aes_iv = message["iv"]

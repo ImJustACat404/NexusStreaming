@@ -1,3 +1,5 @@
+__author__ = "Ido Senn"
+
 import threading
 from tkinter import messagebox
 from pygame_widgets.textbox import TextBox

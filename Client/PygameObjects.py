@@ -1,3 +1,5 @@
+__author__ = "Ido Senn"
+
 import pygame
 import io
 
