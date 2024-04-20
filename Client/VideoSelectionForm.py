@@ -1,12 +1,12 @@
 __author__ = "Ido Senn"
 
 import threading
-from tkinter import messagebox
 from pygame_widgets.textbox import TextBox
 from pygame_widgets.button import Button
 from PygameObjects import Label
 import Communication
 from UIConst import *
+import PopupService
 
 
 class VideoSelectionForm:
@@ -88,7 +88,7 @@ class VideoSelectionForm:
             threading.Thread(target=start_video_watch_event, args=(self.server_socket, self.aes_cypher)).start()
             switch_to_player_event()
         else:
-            messagebox.showerror("Error while trying to connect to stream", response["text"])
+            PopupService.error_popup("Error while trying to connect to stream", response["text"])
 
     def next(self):
         self.current_page += 1

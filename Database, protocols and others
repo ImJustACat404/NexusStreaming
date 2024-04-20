@@ -43,3 +43,6 @@ Message Types:
 
     aes key -
     type = "aes_key", key = aes key, iv = iv
+
+    verification code -
+    type = "code", code=int

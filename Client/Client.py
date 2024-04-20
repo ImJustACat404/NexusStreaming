@@ -8,6 +8,7 @@ from PlayerForm import PlayerForm
 from VideoSelectionForm import VideoSelectionForm
 from NewStreamForm import NewStreamForm
 from WatchOrStreamForm import WatcherOrStreamerForm
+from EmailVerfForm import EmailVerifyForm
 import socket
 import Communication
 import ImageStream
@@ -96,7 +97,7 @@ def event_innit(window_forms):
     """
     window_forms["signup"].button_event_innit(
         lambda: Forms.change_form(window_forms["signup"], window_forms["login"]),
-        lambda: Forms.change_form(window_forms["signup"], window_forms["connectionSuccessful"]))
+        lambda: Forms.change_form(window_forms["signup"], window_forms["emailVerify"]))
     window_forms["login"].button_event_innit(
         lambda: Forms.change_form(window_forms["login"], window_forms["signup"]),
         lambda: Forms.change_form(window_forms["login"], window_forms["connectionSuccessful"]))
@@ -107,6 +108,9 @@ def event_innit(window_forms):
         lambda: Forms.change_form(window_forms["selection"], window_forms["player"]),
         window_forms["player"].set_video,
         video_play_stream)
+    window_forms["emailVerify"].button_event_innit(
+        lambda: Forms.change_form(window_forms["emailVerify"], window_forms["connectionSuccessful"]),
+        lambda: Forms.change_form(window_forms["emailVerify"], window_forms["signup"]))
     window_forms["newStream"].button_event_innit(video_send_stream, stop_stream)
     window_forms["player"].button_event_innit(STREAM_CLOSE_EVENT_PLAY)
 
@@ -128,7 +132,8 @@ def start_ui(server_socket, aes_cypher):
         "player": PlayerForm(server_socket, aes_cypher),
         "selection": VideoSelectionForm(server_socket, aes_cypher),
         "newStream": NewStreamForm(server_socket, aes_cypher),
-        "connectionSuccessful": WatcherOrStreamerForm()}
+        "connectionSuccessful": WatcherOrStreamerForm(),
+        "emailVerify": EmailVerifyForm(server_socket, aes_cypher)}
     event_innit(window_forms)
     WINDOW_FORMS = window_forms
     # start window

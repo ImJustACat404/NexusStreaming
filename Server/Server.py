@@ -10,6 +10,8 @@ from ServerObjects import User
 from Crypto.Cipher import PKCS1_OAEP
 from Crypto.PublicKey import RSA
 from AESEncrypt import AESCypher
+import random
+import EmailService
 
 
 PORT = 8009
@@ -18,6 +20,19 @@ OPEN_STREAMS_USERS = {}
 
 
 def broadcast(creator, video_id):
+    """
+    A function responsible for handling a stream
+    :param creator: The user who created the stream
+    :type creator: User
+    :param video_id: ID of the stream
+    :type video_id: int
+    """
+
+    max_views = 0
+    likes = None
+    dislikes = None
+    stream_name = None
+
     global OPEN_STREAMS_USERS
     views_old = 0
     stream_open = True
@@ -31,6 +46,7 @@ def broadcast(creator, video_id):
             if read_user is creator:
                 # Either close request or stream frame \ audio
                 if message["type"] == "close":
+                    stream_name, _, likes, dislikes, _ = VideoDB.get_video_data(video_id)
                     VideoDB.remove_video(video_id)
                     for client_socket in ready_to_write:
                         client = CONNECTED_USERS[client_socket]
@@ -62,6 +78,9 @@ def broadcast(creator, video_id):
         if views_old != len(OPEN_STREAMS_USERS[video_id]):
             VideoDB.add_views(video_id, len(OPEN_STREAMS_USERS[video_id]) - views_old)
             views_old = len(OPEN_STREAMS_USERS[video_id])
+            if len(OPEN_STREAMS_USERS[video_id]) > max_views:
+                max_views = len(OPEN_STREAMS_USERS[video_id])
+    EmailService.stream_summery(creator.get_email(), creator.get_uname(), stream_name, max_views, likes, dislikes)
 
 
 def new_broadcaster(user, request):
@@ -126,9 +145,8 @@ def sign_up(request):
     if len(request["password"]) < 6:
         return False, "Password must be at least 6 characters long"
     else:
-        # Add new user
-        UserDB.add_user(request["uname"], request["password"], request["email"])
-        return True, "Sign up successful"
+        # User can be added
+        return True, "Email is available and password is valid"
 
 
 def log_in(request):
@@ -164,6 +182,19 @@ def connect(client_socket, aes_cypher):
             successful, text = try_connecting(request)
             message = {"type": "status", "status": successful, "text": text}
             Communication.send_message_aes(client_socket, message, aes_cypher)
+            if successful and request["type"] == "signup":
+                code = str(random.randint(100000, 999999))
+                EmailService.send_verification_code(request["email"], code)
+                client_code_verification = Communication.recv_message_aes(client_socket, aes_cypher)
+                if client_code_verification["code"] == code:
+                    UserDB.add_user(request["uname"], request["password"], request["email"])
+                    text = "Verification successful"
+                    message = {"type": "status", "status": successful, "text": text}
+                else:
+                    successful = False
+                    text = "Verification failed"
+                    message = {"type": "status", "status": successful, "text": text}
+                Communication.send_message_aes(client_socket, message, aes_cypher)
 
         # Get user data from database
         email = request["email"]
