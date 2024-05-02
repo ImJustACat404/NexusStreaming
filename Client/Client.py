@@ -18,11 +18,12 @@ import AESEncrypt
 from AESEncrypt import AESCypher
 from Crypto.Cipher import PKCS1_OAEP
 from Crypto.PublicKey import RSA
+import PopupService
 pygame.init()
 
 
 SERVER_IP = "127.0.0.1"
-SERVER_PORT = 8009
+SERVER_PORT = 8000
 
 # Form globals
 FIRST_FORM = "login"
@@ -160,21 +161,24 @@ def main():
     The main function of the program. Runs when the program starts. Initializing a secure connection with the server.
     """
     print("Connecting to server . . .")
-    server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    server_socket.connect((SERVER_IP, SERVER_PORT))
-    print("Connected!")
-    print("Establishing secure connection . . .")
-    message = Communication.recv_message_unsecure(server_socket)
-    public_rsa_key = RSA.importKey(message["key"])
-    aes_key = AESEncrypt.generate_key()
-    aes_iv = AESEncrypt.generate_iv()
-    rsa_cypher = PKCS1_OAEP.new(public_rsa_key)
-    print(type(rsa_cypher))
-    message = {"type": "aes_key", "key": aes_key, "iv": aes_iv}
-    Communication.send_message_rsa(server_socket, message, rsa_cypher)
-    aes_cypher = AESCypher(aes_iv, aes_key)
-    print("Done!")
-    start_ui(server_socket, aes_cypher)
+    try:
+        server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        server_socket.connect((SERVER_IP, SERVER_PORT))
+        print("Connected!")
+        print("Establishing secure connection . . .")
+        message = Communication.recv_message_unsecure(server_socket)
+        public_rsa_key = RSA.importKey(message["key"])
+        aes_key = AESEncrypt.generate_key()
+        aes_iv = AESEncrypt.generate_iv()
+        rsa_cypher = PKCS1_OAEP.new(public_rsa_key)
+        print(type(rsa_cypher))
+        message = {"type": "aes_key", "key": aes_key, "iv": aes_iv}
+        Communication.send_message_rsa(server_socket, message, rsa_cypher)
+        aes_cypher = AESCypher(aes_iv, aes_key)
+        print("Done!")
+        start_ui(server_socket, aes_cypher)
+    except ConnectionRefusedError:
+        PopupService.error_popup("Could nor connect to server", "Could not connect to server, please try again later")
 
 
 if __name__ == "__main__":

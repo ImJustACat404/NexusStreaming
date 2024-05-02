@@ -5,11 +5,14 @@ NEXUS_PASSWORD = input("Please enter email password: ")
 
 
 def send_mail(recipient_email, subject, body):
-    # Create a yagmail object
-    yag = yagmail.SMTP(user=NEXUS_EMAIL, password=NEXUS_PASSWORD)
-    # Send the email
-    yag.send(to=recipient_email, subject=subject, contents=body)
-    print(f"Email sent to {recipient_email}")
+    try:
+        # Create a yagmail object
+        yag = yagmail.SMTP(user=NEXUS_EMAIL, password=NEXUS_PASSWORD)
+        # Send the email
+        yag.send(to=recipient_email, subject=subject, contents=body)
+        print(f"Email sent to {recipient_email}")
+    except Exception as error:
+        print(f"Could not send mail to {recipient_email}! Error: {error}")
 
 
 def send_verification_code(recipient_email, code):

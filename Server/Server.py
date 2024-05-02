@@ -14,7 +14,7 @@ import random
 import EmailService
 
 
-PORT = 8009
+PORT = 8000
 CONNECTED_USERS = {}
 OPEN_STREAMS_USERS = {}
 
@@ -44,8 +44,24 @@ def broadcast(creator, video_id):
             read_user = CONNECTED_USERS[read_socket]
             message = read_user.recv_message()
             if read_user is creator:
-                # Either close request or stream frame \ audio
-                if message["type"] == "close":
+                try:
+                    # Either close request or stream frame \ audio
+                    if message["type"] == "close":
+                        stream_name, _, likes, dislikes, _ = VideoDB.get_video_data(video_id)
+                        VideoDB.remove_video(video_id)
+                        for client_socket in ready_to_write:
+                            client = CONNECTED_USERS[client_socket]
+                            message = {"type": "close"}
+                            client.send_message(message)  # maybe some users won't be disconnected
+                            threading.Thread(target=new_user, args=(client,)).start()
+                        threading.Thread(target=new_user, args=(creator,)).start()
+                        stream_open = False
+                    else:
+                        for write_socket in ready_to_write:
+                            write_user = CONNECTED_USERS[write_socket]
+                            write_user.send_message(message)
+                except ConnectionResetError:
+                    # creator socket closed
                     stream_name, _, likes, dislikes, _ = VideoDB.get_video_data(video_id)
                     VideoDB.remove_video(video_id)
                     for client_socket in ready_to_write:
@@ -53,12 +69,7 @@ def broadcast(creator, video_id):
                         message = {"type": "close"}
                         client.send_message(message)  # maybe some users won't be disconnected
                         threading.Thread(target=new_user, args=(client,)).start()
-                    threading.Thread(target=new_user, args=(creator,)).start()
                     stream_open = False
-                else:
-                    for write_socket in ready_to_write:
-                        write_user = CONNECTED_USERS[write_socket]
-                        write_user.send_message(message)
             else:
                 if message["type"] == "like":
                     likes_to_add += 1
@@ -134,8 +145,11 @@ def new_user(user):
             new_watcher(user, request)
         else:
             pass  # invalid request
-    except RuntimeError:
-        pass  # socket closed
+    except ValueError:
+        # socket closed
+        CONNECTED_USERS.pop(user.get_socket())
+        user.get_socket().close()
+        print(f"Client {user.get_uname()} disconnected")
 
 
 def sign_up(request):
@@ -176,47 +190,47 @@ def connect(client_socket, aes_cypher):
     successful = False
     request = {}
 
-    try:
-        while not successful:
-            request = Communication.recv_message_aes(client_socket, aes_cypher)
-            successful, text = try_connecting(request)
-            message = {"type": "status", "status": successful, "text": text}
+    while not successful:
+        request = Communication.recv_message_aes(client_socket, aes_cypher)
+        successful, text = try_connecting(request)
+        message = {"type": "status", "status": successful, "text": text}
+        Communication.send_message_aes(client_socket, message, aes_cypher)
+        if successful and request["type"] == "signup":
+            code = str(random.randint(100000, 999999))
+            EmailService.send_verification_code(request["email"], code)
+            client_code_verification = Communication.recv_message_aes(client_socket, aes_cypher)
+            if client_code_verification["code"] == code:
+                UserDB.add_user(request["uname"], request["password"], request["email"])
+                text = "Verification successful"
+                message = {"type": "status", "status": successful, "text": text}
+            else:
+                successful = False
+                text = "Verification failed"
+                message = {"type": "status", "status": successful, "text": text}
             Communication.send_message_aes(client_socket, message, aes_cypher)
-            if successful and request["type"] == "signup":
-                code = str(random.randint(100000, 999999))
-                EmailService.send_verification_code(request["email"], code)
-                client_code_verification = Communication.recv_message_aes(client_socket, aes_cypher)
-                if client_code_verification["code"] == code:
-                    UserDB.add_user(request["uname"], request["password"], request["email"])
-                    text = "Verification successful"
-                    message = {"type": "status", "status": successful, "text": text}
-                else:
-                    successful = False
-                    text = "Verification failed"
-                    message = {"type": "status", "status": successful, "text": text}
-                Communication.send_message_aes(client_socket, message, aes_cypher)
+    # Get user data from database
+    email = request["email"]
+    uname = UserDB.get_user_name(email)
 
-        # Get user data from database
-        email = request["email"]
-        uname = UserDB.get_user_name(email)
-
-        print(f"New user! User name: {uname}, E-Mail: {email}")
-        CONNECTED_USERS[client_socket] = User(client_socket, uname, email, aes_cypher)
-        new_user(CONNECTED_USERS[client_socket])
-    except RuntimeError:
-        pass  # socket closed
+    print(f"New user! User name: {uname}, E-Mail: {email}")
+    CONNECTED_USERS[client_socket] = User(client_socket, uname, email, aes_cypher)
+    new_user(CONNECTED_USERS[client_socket])
 
 
 def establish_secure_connection(client_socket):
-    private_key, public_key = Communication.generate_rsa_keys()
-    message = {"type": "rsa_key", "key": public_key}
-    Communication.send_message_unsecure(client_socket, message)
-    rsa_cypher = PKCS1_OAEP.new(RSA.importKey(private_key))
-    message = Communication.recv_message_rsa(client_socket, rsa_cypher)
-    aes_key = message["key"]
-    aes_iv = message["iv"]
-    aes_cypher = AESCypher(aes_iv, aes_key)
-    connect(client_socket, aes_cypher)
+    try:
+        private_key, public_key = Communication.generate_rsa_keys()
+        message = {"type": "rsa_key", "key": public_key}
+        Communication.send_message_unsecure(client_socket, message)
+        rsa_cypher = PKCS1_OAEP.new(RSA.importKey(private_key))
+        message = Communication.recv_message_rsa(client_socket, rsa_cypher)
+        aes_key = message["key"]
+        aes_iv = message["iv"]
+        aes_cypher = AESCypher(aes_iv, aes_key)
+        connect(client_socket, aes_cypher)
+    except ValueError:
+        client_socket.close()
+        print("Client disconnected")
 
 
 def main():

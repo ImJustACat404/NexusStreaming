@@ -24,3 +24,6 @@ class User:
 
     def recv_message(self):
         return Communication.recv_message_aes(self.socket, self.aes_cypher)
+
+    def close_socket(self):
+        self.socket.close()
