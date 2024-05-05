@@ -76,7 +76,7 @@ class VideoSelectionForm:
         self.current_page = 0
         self.update_tiles()
 
-    def watch_video(self, button_index, switch_to_player_event, set_video_event, start_video_watch_event):
+    def watch_video(self, button_index, switch_to_player_callback, set_video_callback, start_video_watch_callback):
         selected_video = self.video_list[self.current_page * 9 + button_index]
         print(selected_video)
         message = {"type": "watch", "vid": selected_video[5]}
@@ -84,9 +84,9 @@ class VideoSelectionForm:
         response = Communication.recv_message_aes(self.server_socket, self.aes_cypher)
         if response["status"]:
             # video is available
-            set_video_event(selected_video)
-            threading.Thread(target=start_video_watch_event, args=(self.server_socket, self.aes_cypher)).start()
-            switch_to_player_event()
+            set_video_callback(selected_video)
+            threading.Thread(target=start_video_watch_callback, args=(self.server_socket, self.aes_cypher)).start()
+            switch_to_player_callback()
         else:
             PopupService.error_popup("Error while trying to connect to stream", response["text"])
 
@@ -119,12 +119,12 @@ class VideoSelectionForm:
     def get_title(self):
         return self.title
 
-    def button_event_innit(self, switch_to_player_event, set_video_event, start_video_watch_event):
+    def button_event_innit(self, switch_to_player_callback, set_video_callback, start_video_watch_callback):
         # written like that so the functions won't be called on definition
         self.search_button.setOnClick(lambda func=self.search: func())
         self.next_button.setOnClick(lambda func=self.next: func())
         self.previous_button.setOnClick(lambda func=self.previous: func())
         index = 0
         for frame in self.video_frames:
-            frame[0].setOnClick(lambda i=index: self.watch_video(i, switch_to_player_event, set_video_event, start_video_watch_event))
+            frame[0].setOnClick(lambda i=index: self.watch_video(i, switch_to_player_callback, set_video_callback, start_video_watch_callback))
             index += 1

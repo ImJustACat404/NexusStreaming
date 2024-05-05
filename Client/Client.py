@@ -33,13 +33,17 @@ STREAM_CLOSE_EVENT_PLAY = pygame.USEREVENT + 1
 STREAM_CLOSE_EVENT_SEND = pygame.USEREVENT + 2
 
 
-def stop_stream():
+def close_program(server_socket):
     """
-    Stop sending stream (capturing and sharing)
+    A function called when the program is being closed
+    :return:
     """
     global STREAM_OPEN
-    STREAM_OPEN = False
-    pygame.event.post(pygame.event.Event(STREAM_CLOSE_EVENT_SEND))
+    if STREAM_OPEN:
+        STREAM_OPEN = False
+    server_socket.close()
+    pygame.quit()
+    quit()
 
 
 def video_send_stream(server_socket, aes_cypher, is_screen):
@@ -112,7 +116,7 @@ def event_innit(window_forms):
     window_forms["emailVerify"].button_event_innit(
         lambda: Forms.change_form(window_forms["emailVerify"], window_forms["connectionSuccessful"]),
         lambda: Forms.change_form(window_forms["emailVerify"], window_forms["signup"]))
-    window_forms["newStream"].button_event_innit(video_send_stream, stop_stream)
+    window_forms["newStream"].button_event_innit(video_send_stream, STREAM_CLOSE_EVENT_SEND)
     window_forms["player"].button_event_innit(STREAM_CLOSE_EVENT_PLAY)
 
 
@@ -145,9 +149,9 @@ def start_ui(server_socket, aes_cypher):
         events = pygame.event.get()
         for event in events:
             if event.type == pygame.QUIT:
-                pygame.quit()
-                quit()
+                close_program(server_socket)
             elif event.type == STREAM_CLOSE_EVENT_SEND:
+                STREAM_OPEN = False
                 Forms.change_form(WINDOW_FORMS["newStream"], WINDOW_FORMS["connectionSuccessful"])
             elif event.type == STREAM_CLOSE_EVENT_PLAY:
                 Forms.change_form(WINDOW_FORMS["player"], WINDOW_FORMS["connectionSuccessful"])
@@ -175,6 +179,7 @@ def main():
         message = {"type": "aes_key", "key": aes_key, "iv": aes_iv}
         Communication.send_message_rsa(server_socket, message, rsa_cypher)
         aes_cypher = AESCypher(aes_iv, aes_key)
+        
         print("Done!")
         start_ui(server_socket, aes_cypher)
     except ConnectionRefusedError:

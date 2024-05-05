@@ -77,17 +77,17 @@ class LogInForm:
     def get_title(self):
         return self.title
 
-    def _login_request(self, successful_connection_event):
+    def _login_request(self, successful_connection_callback):
         message = {"type": "login", "email": self.email_textbox.getText(), "password": self.password_textbox.getText()}
         Communication.send_message_aes(self.server_socket, message, self.aes_cypher)
         response = Communication.recv_message_aes(self.server_socket, self.aes_cypher)
         if response["status"]:
             # login successful
-            successful_connection_event()
+            successful_connection_callback()
         else:
             # login unsuccessful
             self.error_label.set_text(response["text"])
 
-    def button_event_innit(self, new_user_event, successful_connection_event):
-        self.new_user_button.setOnClick(new_user_event)
-        self.login_button.setOnClick(lambda: self._login_request(successful_connection_event))
+    def button_event_innit(self, new_user_callback, successful_connection_callback):
+        self.new_user_button.setOnClick(new_user_callback)
+        self.login_button.setOnClick(lambda: self._login_request(successful_connection_callback))

@@ -28,6 +28,6 @@ class WatcherOrStreamerForm:
     def get_title(self):
         return self.title
 
-    def button_event_innit(self, watch_event, stream_event):
-        self.new_stream_button.setOnClick(stream_event)
-        self.watch_button.setOnClick(watch_event)
+    def button_event_innit(self, watch_callback, stream_callback):
+        self.new_stream_button.setOnClick(stream_callback)
+        self.watch_button.setOnClick(watch_callback)

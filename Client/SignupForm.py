@@ -67,7 +67,7 @@ class SignUpForm:
     def get_title(self):
         return self.title
 
-    def _signup_request(self, successful_connection_event):
+    def _signup_request(self, successful_connection_callback):
         """
 
         :param successful_connection_event:
@@ -82,11 +82,11 @@ class SignUpForm:
         print(response)
         if response["status"]:
             # sign up successful
-            successful_connection_event()
+            successful_connection_callback()
         else:
             # sign up unsuccessful
             self.error_label.set_text(response["text"])
 
-    def button_event_innit(self, already_user_event, successful_connection_event):
-        self.already_user_button.setOnClick(already_user_event)
-        self.sign_up_button.setOnClick(lambda: self._signup_request(successful_connection_event))
+    def button_event_innit(self, already_user_callback, successful_connection_callback):
+        self.already_user_button.setOnClick(already_user_callback)
+        self.sign_up_button.setOnClick(lambda: self._signup_request(successful_connection_callback))

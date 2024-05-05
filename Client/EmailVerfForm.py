@@ -41,16 +41,16 @@ class EmailVerifyForm:
     def get_title(self):
         return self.title
 
-    def verify_button_press(self, unsuccessful_event, successful_event):
+    def verify_button_press(self, unsuccessful_callback, successful_callback):
         code = self.code_textbox.getText()
         message = {"type": "code", "code": code}
         Communication.send_message_aes(self.server_socket, message, self.aes_cypher)
         response = Communication.recv_message_aes(self.server_socket, self.aes_cypher)
         if response["status"]:
-            successful_event()
+            successful_callback()
         else:
             PopupService.error_popup("Verification failed!", response["text"])
-            unsuccessful_event()
+            unsuccessful_callback()
 
-    def button_event_innit(self, successful_event, unsuccessful_event):
-        self.verify_button.setOnClick(lambda: self.verify_button_press(unsuccessful_event, successful_event))
+    def button_event_innit(self, successful_callback, unsuccessful_callback):
+        self.verify_button.setOnClick(lambda: self.verify_button_press(unsuccessful_callback, successful_callback))

@@ -49,17 +49,17 @@ class NewStreamForm:
     def get_title(self):
         return self.title
 
-    def start_button_press(self, stream_start_event):
+    def start_button_press(self, stream_start_callback):
         self.start_button.hide()
         message = {"type": "broadcast", "title": self.title_textbox.getText()}
         Communication.send_message_aes(self.server_socket, message, self.aes_cypher)
-        threading.Thread(target=stream_start_event, args=(self.server_socket, self.aes_cypher,  self.capture_dropdown.getSelected() == "Screen")).start()
+        threading.Thread(target=stream_start_callback, args=(self.server_socket, self.aes_cypher,  self.capture_dropdown.getSelected() == "Screen")).start()
         self.stop_button.show()
 
     def stop_button_press(self, stream_stop_event):
         self.stop_button.hide()
-        stream_stop_event()
+        pygame.event.post(pygame.event.Event(stream_stop_event))
 
-    def button_event_innit(self, stream_start_event, stream_stop_event):
+    def button_event_innit(self, stream_start_callback, stream_stop_event):
         self.stop_button.setOnClick(lambda func=self.stop_button_press: func(stream_stop_event))
-        self.start_button.setOnClick(lambda func=self.start_button_press: func(stream_start_event))
+        self.start_button.setOnClick(lambda func=self.start_button_press: func(stream_start_callback))
