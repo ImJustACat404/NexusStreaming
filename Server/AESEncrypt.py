@@ -37,5 +37,3 @@ class AESCypher:
         # Unpad the decrypted data
         message_bytes = unpad(decrypted_data, AES.block_size)
         return message_bytes
-
-obj = AESCypher(generate_iv(), generate_key())
