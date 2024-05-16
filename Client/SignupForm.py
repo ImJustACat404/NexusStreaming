@@ -79,7 +79,6 @@ class SignUpForm:
                    "password": self.password_textbox.getText()}
         Communication.send_message_aes(self.server_socket, message, self.aes_cypher)
         response = Communication.recv_message_aes(self.server_socket, self.aes_cypher)
-        print(response)
         if response["status"]:
             # sign up successful
             successful_connection_callback()

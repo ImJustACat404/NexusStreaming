@@ -29,6 +29,7 @@ SERVER_PORT = 8000
 FIRST_FORM = "login"
 WINDOW_FORMS = {}
 STREAM_OPEN = False
+SOFTWARE_CLOSED = False
 STREAM_CLOSE_EVENT_PLAY = pygame.USEREVENT + 1
 STREAM_CLOSE_EVENT_SEND = pygame.USEREVENT + 2
 
@@ -38,10 +39,13 @@ def close_program(server_socket):
     A function called when the program is being closed
     :return:
     """
-    global STREAM_OPEN
-    if STREAM_OPEN:
-        STREAM_OPEN = False
+    # Close threads
+    global STREAM_OPEN, SOFTWARE_CLOSED
+    SOFTWARE_CLOSED = True
+    STREAM_OPEN = False
+    # Close socket
     server_socket.close()
+    # Close pygame
     pygame.quit()
     quit()
 
@@ -69,6 +73,7 @@ def video_send_stream(server_socket, aes_cypher, is_screen):
         Communication.send_message_aes(server_socket, video_msg, aes_cypher)
         audio_msg = {"type": "audio", "data": audio_stream.get_current_audio()}
         Communication.send_message_aes(server_socket, audio_msg, aes_cypher)
+    audio_stream.terminate()
     Communication.send_message_aes(server_socket, {"type": "close"}, aes_cypher)
 
 
@@ -91,6 +96,7 @@ def video_play_stream(server_socket, aes_cypher):
             WINDOW_FORMS["player"].set_frame(message["data"])
         elif message["type"] == "close":
             STREAM_OPEN = False
+    audio_stream.terminate()
     pygame.event.post(pygame.event.Event(STREAM_CLOSE_EVENT_PLAY))
 
 
@@ -154,6 +160,8 @@ def start_ui(server_socket, aes_cypher):
                 STREAM_OPEN = False
                 Forms.change_form(WINDOW_FORMS["newStream"], WINDOW_FORMS["connectionSuccessful"])
             elif event.type == STREAM_CLOSE_EVENT_PLAY:
+                if SOFTWARE_CLOSED:
+                    exit()
                 Forms.change_form(WINDOW_FORMS["player"], WINDOW_FORMS["connectionSuccessful"])
         win.fill((255, 255, 255))  # white
         Forms.update(events)
