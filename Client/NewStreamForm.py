@@ -23,7 +23,11 @@ class NewStreamForm:
         self.capture_label = Label(self.win, "Capture mode:", (100, 250), DEFAULT_FONT, BLUE)
         self.capture_dropdown = Dropdown(self.win, 300, 230, 200, 50, "Select device", ["Camera", "Screen"], font=DEFAULT_FONT_SMALL, borderRadius=10, textColour=RED)
         self.start_button = Button(self.win, 250, 400, 300, 100, text="start", textColour=BLUE, font=DEFAULT_FONT_BIG, radius=10)
+        self.closing_message = Label(self.win, "Closing...", (0, 400), DEFAULT_FONT_BIG, BLUE, align="center")
         self.stop_button = Button(self.win, 250, 400, 300, 100, text="stop", textColour=RED, font=DEFAULT_FONT_BIG, radius=10)
+        unscaled_back_icon = pygame.image.load(BACK_ICON)
+        self.back_button = Button(self.win, 20, 540, 80, 40, image=pygame.transform.scale(unscaled_back_icon, (30, 30)),
+                                  colour=BLUE, radius=10, hoverColour=DARK_BLUE, pressedColour=DARKER_BLUE)
         self.hide()
 
     def show(self):
@@ -33,6 +37,7 @@ class NewStreamForm:
         self.capture_label.show()
         self.capture_dropdown.show()
         self.start_button.show()
+        self.back_button.show()
 
     def hide(self):
         self.window_title.hide()
@@ -42,6 +47,8 @@ class NewStreamForm:
         self.capture_dropdown.hide()
         self.start_button.hide()
         self.stop_button.hide()
+        self.back_button.hide()
+        self.closing_message.hide()
 
     def get_size(self):
         return self.size_x, self.size_y
@@ -51,6 +58,7 @@ class NewStreamForm:
 
     def start_button_press(self, stream_start_callback):
         self.start_button.hide()
+        self.back_button.hide()
         message = {"type": "broadcast", "title": self.title_textbox.getText()}
         Communication.send_message_aes(self.server_socket, message, self.aes_cypher)
         threading.Thread(target=stream_start_callback, args=(self.server_socket, self.aes_cypher,  self.capture_dropdown.getSelected() == "Screen")).start()
@@ -58,8 +66,10 @@ class NewStreamForm:
 
     def stop_button_press(self, stream_stop_event):
         self.stop_button.hide()
+        self.closing_message.show()
         pygame.event.post(pygame.event.Event(stream_stop_event))
 
-    def button_event_innit(self, stream_start_callback, stream_stop_event):
+    def button_event_innit(self, return_to_menu_callback, stream_start_callback, stream_stop_event):
         self.stop_button.setOnClick(lambda func=self.stop_button_press: func(stream_stop_event))
         self.start_button.setOnClick(lambda func=self.start_button_press: func(stream_start_callback))
+        self.back_button.setOnClick(return_to_menu_callback)

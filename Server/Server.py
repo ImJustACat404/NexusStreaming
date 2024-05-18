@@ -6,7 +6,7 @@ import Communication
 import socket
 import threading
 import select
-from ServerObjects import User
+from ServerUser import User
 from Crypto.Cipher import PKCS1_OAEP
 from Crypto.PublicKey import RSA
 from AESEncrypt import AESCypher
@@ -44,9 +44,11 @@ def broadcast(creator, video_id):
             read_user = CONNECTED_USERS[read_socket]
             message = read_user.recv_message()
             if read_user is creator:
+                # A message from the creator
                 try:
                     # Either close request or stream frame \ audio
                     if message["type"] == "close":
+                        # Creator closes stream
                         stream_name, _, likes, dislikes, _ = VideoDB.get_video_data(video_id)
                         VideoDB.remove_video(video_id)
                         for client_socket in ready_to_write:
@@ -57,6 +59,7 @@ def broadcast(creator, video_id):
                         threading.Thread(target=new_user, args=(creator,)).start()
                         stream_open = False
                     else:
+                        # New frame or audio
                         for write_socket in ready_to_write:
                             write_user = CONNECTED_USERS[write_socket]
                             write_user.send_message(message)
@@ -71,6 +74,7 @@ def broadcast(creator, video_id):
                         threading.Thread(target=new_user, args=(client,)).start()
                     stream_open = False
             else:
+                # A message from the user
                 if message["type"] == "like":
                     likes_to_add += 1
                 elif message["type"] == "dislike":
@@ -82,6 +86,7 @@ def broadcast(creator, video_id):
                     message = {"type": "close"}
                     read_user.send_message(message)  # maybe some users won't be disconnected
                     threading.Thread(target=new_user, args=(read_user,)).start()
+        # update database
         if likes_to_add != 0:
             VideoDB.add_likes(video_id, likes_to_add)
         if dislikes_to_add != 0:
@@ -91,6 +96,7 @@ def broadcast(creator, video_id):
             views_old = len(OPEN_STREAMS_USERS[video_id])
             if len(OPEN_STREAMS_USERS[video_id]) > max_views:
                 max_views = len(OPEN_STREAMS_USERS[video_id])
+    # send stream summery to the creator
     EmailService.stream_summery(creator.get_email(), creator.get_uname(), stream_name, max_views, likes, dislikes)
 
 
@@ -111,25 +117,7 @@ def user_search(user, request):
 
 
 def new_watcher(user, request):
-    video_id = -1
-    selected_a_video = False
-    while not selected_a_video:
-        if request["type"] == "search":
-            user_search(user, request)
-            request = user.recv_message()
-        elif request["type"] == "watch":
-            # block people from opening closed streams
-            if VideoDB.is_video_in_db(request["vid"]):
-                video_id = request["vid"]
-                message = {"type": "status", "status": True, "text": f"Connected to stream {video_id}"}
-                user.send_message(message)
-                selected_a_video = True
-            else:
-                message = {"type": "status", "status": False, "text": "Video not found!"}
-                user.send_message(message)
-                request = user.recv_message()
-        else:
-            pass
+    video_id = request["vid"]
     OPEN_STREAMS_USERS[video_id] += [user.get_socket()]
 
 
@@ -137,14 +125,33 @@ def new_user(user):
     # Check if broadcaster or watcher
     global CONNECTED_USERS
     try:
-        request = user.recv_message()
-        # either a request for a video list of the creation of a new stream
+        request = None
+        navigating_menu = True
+        while navigating_menu:
+            request = user.recv_message()
+            # a request for a search, watch, or the creation of a new stream
+            if request["type"] == "broadcast":
+                navigating_menu = False
+            elif request["type"] == "search":
+                user_search(user, request)
+            elif request["type"] == "watch":
+                # block people from opening closed streams
+                if VideoDB.is_video_in_db(request["vid"]):
+                    video_id = request["vid"]
+                    message = {"type": "status", "status": True, "text": f"Connected to stream {video_id}"}
+                    user.send_message(message)
+                    navigating_menu = False
+                else:
+                    message = {"type": "status", "status": False, "text": "Video not found!"}
+                    user.send_message(message)
+            else:
+                pass  # invalid request
+        # either watcher or streamer
         if request["type"] == "broadcast":
             new_broadcaster(user, request)
-        elif request["type"] == "search":
-            new_watcher(user, request)
         else:
-            pass  # invalid request
+            # watcher
+            new_watcher(user, request)
     except ValueError:
         # socket closed
         CONNECTED_USERS.pop(user.get_socket())

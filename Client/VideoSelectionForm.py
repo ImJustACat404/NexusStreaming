@@ -43,6 +43,8 @@ class VideoSelectionForm:
         self.next_button = Button(self.win, 430, 540, 80, 40, image=pygame.transform.scale(unscaled_next_icon, (30, 30)), colour=BLUE, radius=10, hoverColour=DARK_BLUE, pressedColour=DARKER_BLUE)
         unscaled_prev_icon = pygame.image.load(PREV_ICON)
         self.previous_button = Button(self.win, 290, 540, 80, 40, image=pygame.transform.scale(unscaled_prev_icon, (30, 30)), colour=BLUE, radius=10, hoverColour=DARK_BLUE, pressedColour=DARKER_BLUE)
+        unscaled_back_icon = pygame.image.load(BACK_ICON)
+        self.back_button = Button(self.win, 20, 540, 80, 40, image=pygame.transform.scale(unscaled_back_icon, (30, 30)), colour=BLUE, radius=10, hoverColour=DARK_BLUE, pressedColour=DARKER_BLUE)
         self.video_list = []
         self.current_page = 0
         self.hide()
@@ -103,6 +105,7 @@ class VideoSelectionForm:
         self.update_tiles()
         self.search_bar.show()
         self.search_button.show()
+        self.back_button.show()
 
     def hide(self):
         for frame in self.video_frames:
@@ -112,6 +115,7 @@ class VideoSelectionForm:
         self.search_button.hide()
         self.previous_button.hide()
         self.next_button.hide()
+        self.back_button.hide()
 
     def get_size(self):
         return self.size_x, self.size_y
@@ -119,11 +123,12 @@ class VideoSelectionForm:
     def get_title(self):
         return self.title
 
-    def button_event_innit(self, switch_to_player_callback, set_video_callback, start_video_watch_callback):
+    def button_event_innit(self, return_to_menu_callback, switch_to_player_callback, set_video_callback, start_video_watch_callback):
         # written like that so the functions won't be called on definition
         self.search_button.setOnClick(lambda func=self.search: func())
         self.next_button.setOnClick(lambda func=self.next: func())
         self.previous_button.setOnClick(lambda func=self.previous: func())
+        self.back_button.setOnClick(return_to_menu_callback)
         index = 0
         for frame in self.video_frames:
             frame[0].setOnClick(lambda i=index: self.watch_video(i, switch_to_player_callback, set_video_callback, start_video_watch_callback))

@@ -62,19 +62,20 @@ def video_send_stream(server_socket, aes_cypher, is_screen):
     """
     # stream details: (vid, is_screen)
     global STREAM_OPEN
-    STREAM_OPEN = True
+    # start the camera and mic
     if is_screen:
         vid_stream = ImageStream.ScreenStream()
     else:
         vid_stream = ImageStream.CameraStream()
     audio_stream = AudioRecord.AudioStream()
+    STREAM_OPEN = True
     while STREAM_OPEN:  # make it close when press stop
         video_msg = {"type": "frame", "data": vid_stream.get_current_frame()}
         Communication.send_message_aes(server_socket, video_msg, aes_cypher)
         audio_msg = {"type": "audio", "data": audio_stream.get_current_audio()}
         Communication.send_message_aes(server_socket, audio_msg, aes_cypher)
-    audio_stream.terminate()
     Communication.send_message_aes(server_socket, {"type": "close"}, aes_cypher)
+    audio_stream.terminate()
 
 
 def video_play_stream(server_socket, aes_cypher):
@@ -116,13 +117,17 @@ def event_innit(window_forms):
         lambda: Forms.change_form(window_forms["connectionSuccessful"], window_forms["selection"]),
         lambda: Forms.change_form(window_forms["connectionSuccessful"], window_forms["newStream"]))
     window_forms["selection"].button_event_innit(
+        lambda: Forms.change_form(window_forms["selection"], window_forms["connectionSuccessful"]),
         lambda: Forms.change_form(window_forms["selection"], window_forms["player"]),
         window_forms["player"].set_video,
         video_play_stream)
     window_forms["emailVerify"].button_event_innit(
         lambda: Forms.change_form(window_forms["emailVerify"], window_forms["connectionSuccessful"]),
         lambda: Forms.change_form(window_forms["emailVerify"], window_forms["signup"]))
-    window_forms["newStream"].button_event_innit(video_send_stream, STREAM_CLOSE_EVENT_SEND)
+    window_forms["newStream"].button_event_innit(
+        lambda: Forms.change_form(window_forms["newStream"], window_forms["connectionSuccessful"]),
+        video_send_stream,
+        STREAM_CLOSE_EVENT_SEND)
     window_forms["player"].button_event_innit(STREAM_CLOSE_EVENT_PLAY)
 
 
@@ -157,6 +162,8 @@ def start_ui(server_socket, aes_cypher):
             if event.type == pygame.QUIT:
                 close_program(server_socket)
             elif event.type == STREAM_CLOSE_EVENT_SEND:
+                while not STREAM_OPEN:
+                    pass  # to handle case where client presses close button before the stream starts
                 STREAM_OPEN = False
                 Forms.change_form(WINDOW_FORMS["newStream"], WINDOW_FORMS["connectionSuccessful"])
             elif event.type == STREAM_CLOSE_EVENT_PLAY:
