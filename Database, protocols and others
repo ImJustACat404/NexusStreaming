@@ -32,11 +32,8 @@ Message Types:
     stream closed -
     type = "close"
 
-    like -
-    type="like"
-
-    dislike -
-    type="dislike"
+    reaction -
+    type="reaction", reaction = str (like, unlike, remove)
 
     rsa key -
     type="rsa_key", key = rsa key

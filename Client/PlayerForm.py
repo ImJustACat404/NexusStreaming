@@ -30,20 +30,35 @@ class PlayerForm:
         self.like_button = Button(self.win, 550, 450, 90, 40, text="0", textHAlign='right', textVAlign='centre',  image=pygame.transform.scale(unscaled_like_icon, (25, 25)), imageHAlign='left', radius=10)
         unscaled_dislike_icon = pygame.image.load(DISLIKE_ICON)
         self.dislike_button = Button(self.win, 650, 450, 90, 40, text="0", textHAlign='right', textVAlign='centre',  image=pygame.transform.scale(unscaled_dislike_icon, (25, 25)), imageHAlign='left', radius=10)
+        unscaled_unlike_icon = pygame.image.load(UNLIKE_ICON)
+        self.unlike_button = Button(self.win, 550, 450, 90, 40, text="0", textHAlign='right', textVAlign='centre', image=pygame.transform.scale(unscaled_unlike_icon, (25, 25)), imageHAlign='left', radius=10)
+        unscaled_undislike_icon = pygame.image.load(UNDISLIKE_ICON)
+        self.undislike_button = Button(self.win, 650, 450, 90, 40, text="0", textHAlign='right', textVAlign='centre', image=pygame.transform.scale(unscaled_undislike_icon, (25, 25)), imageHAlign='left', radius=10)
         with open(EMPTY_SCREEN, "rb") as image_file:
             jpeg_bytes = image_file.read()
         self.image = Image(self.win, jpeg_bytes, 712, 400, (45, 30))
         self.close_button = Button(self.win, 550, 500, 190, 80, text="Close", font=DEFAULT_FONT_BIG, radius=10)
+        self.current_reaction = 0
         self.hide()
+
+    def show_reactions(self):
+        if self.current_reaction == 0:
+            self.like_button.show()
+            self.dislike_button.show()
+        elif self.current_reaction == 1:
+            self.unlike_button.show()
+            self.dislike_button.show()
+        elif self.current_reaction == -1:
+            self.like_button.show()
+            self.undislike_button.show()
 
     def show(self):
         self.broadcaster_name_label.show()
         self.video_title_label.show()
         self.views_label.show()
-        self.like_button.show()
-        self.dislike_button.show()
         self.image.show()
         self.close_button.show()
+        self.show_reactions()
 
     def hide(self):
         self.broadcaster_name_label.hide()
@@ -51,23 +66,52 @@ class PlayerForm:
         self.views_label.hide()
         self.like_button.hide()
         self.dislike_button.hide()
+        self.unlike_button.hide()
+        self.undislike_button.hide()
         self.image.hide()
         self.close_button.hide()
 
     def set_video(self, video_data):
-        video_name, creator, likes, dislikes, views, _ = video_data
+        video_name, creator, views, vid, likes, dislikes, current_reaction = video_data
+        self.current_reaction = current_reaction
         self.video_title_label.set_text(video_name)
         self.broadcaster_name_label.set_text(creator)
         self.like_button.setText(stringify_number(likes))
+        self.unlike_button.setText(stringify_number(likes))
         self.dislike_button.setText(stringify_number(dislikes))
+        self.undislike_button.setText(stringify_number(dislikes))
         self.views_label.set_text(f"Views: {stringify_number(views)}")
 
     def like(self):
-        message = {"type": "like"}
+        self.current_reaction = 1
+        self.like_button.hide()
+        self.unlike_button.show()
+        self.undislike_button.hide()
+        self.dislike_button.show()
+        message = {"type": "reaction", "reaction": "like"}
         Communication.send_message_aes(self.server_socket, message, self.aes_cypher)
 
     def dislike(self):
-        message = {"type": "dislike"}
+        self.current_reaction = -1
+        self.dislike_button.hide()
+        self.undislike_button.show()
+        self.unlike_button.hide()
+        self.like_button.show()
+        message = {"type": "reaction", "reaction": "dislike"}
+        Communication.send_message_aes(self.server_socket, message, self.aes_cypher)
+
+    def unlike(self):
+        self.current_reaction = 0
+        self.unlike_button.hide()
+        self.like_button.show()
+        message = {"type": "reaction", "reaction": "remove"}
+        Communication.send_message_aes(self.server_socket, message, self.aes_cypher)
+
+    def undislike(self):
+        self.current_reaction = 0
+        self.undislike_button.hide()
+        self.dislike_button.show()
+        message = {"type": "reaction", "reaction": "remove"}
         Communication.send_message_aes(self.server_socket, message, self.aes_cypher)
 
     def set_frame(self, jpeg_bytes):
@@ -87,5 +131,7 @@ class PlayerForm:
     def button_event_innit(self, close_stream_event):
         self.like_button.setOnClick(lambda func=self.like: func())
         self.dislike_button.setOnClick(lambda func=self.dislike: func())
+        self.unlike_button.setOnClick(lambda func=self.unlike: func())
+        self.undislike_button.setOnClick(lambda func=self.undislike: func())
         self.close_button.setOnClick(lambda func=self.close_stream: func(close_stream_event,))
 

@@ -2,6 +2,7 @@ __author__ = "Ido Senn"
 
 import UserDB
 import VideoDB
+import ReactionDB
 import Communication
 import socket
 import threading
@@ -14,7 +15,7 @@ import random
 import EmailService
 
 
-PORT = 8000
+PORT = 8001
 CONNECTED_USERS = {}
 OPEN_STREAMS_USERS = {}
 
@@ -29,17 +30,14 @@ def broadcast(creator, video_id):
     """
 
     max_views = 0
-    likes = None
-    dislikes = None
     stream_name = None
 
     global OPEN_STREAMS_USERS
     views_old = 0
     stream_open = True
+    stream_name = VideoDB.get_video_data(video_id)[0]
     while stream_open:
         ready_to_read, ready_to_write, in_error = select.select(OPEN_STREAMS_USERS[video_id] + [creator.get_socket()], OPEN_STREAMS_USERS[video_id], [])
-        likes_to_add = 0
-        dislikes_to_add = 0
         for read_socket in ready_to_read:
             read_user = CONNECTED_USERS[read_socket]
             message = read_user.recv_message()
@@ -49,7 +47,6 @@ def broadcast(creator, video_id):
                     # Either close request or stream frame \ audio
                     if message["type"] == "close":
                         # Creator closes stream
-                        stream_name, _, likes, dislikes, _ = VideoDB.get_video_data(video_id)
                         VideoDB.remove_video(video_id)
                         for client_socket in ready_to_write:
                             client = CONNECTED_USERS[client_socket]
@@ -75,10 +72,13 @@ def broadcast(creator, video_id):
                     stream_open = False
             else:
                 # A message from the user
-                if message["type"] == "like":
-                    likes_to_add += 1
-                elif message["type"] == "dislike":
-                    dislikes_to_add += 1
+                if message["type"] == "reaction":
+                    if message["reaction"] == "like":
+                        ReactionDB.add_reaction(video_id, read_user.get_email(), 1)
+                    elif message["reaction"] == "dislike":
+                        ReactionDB.add_reaction(video_id, read_user.get_email(), -1)
+                    elif message["reaction"] == "remove":
+                        ReactionDB.remove_reaction(video_id, read_user.get_email())
                 elif message["type"] == "close":
                     OPEN_STREAMS_USERS[video_id].remove(read_socket)
                     if read_socket in ready_to_write:
@@ -86,18 +86,16 @@ def broadcast(creator, video_id):
                     message = {"type": "close"}
                     read_user.send_message(message)  # maybe some users won't be disconnected
                     threading.Thread(target=new_user, args=(read_user,)).start()
-        # update database
-        if likes_to_add != 0:
-            VideoDB.add_likes(video_id, likes_to_add)
-        if dislikes_to_add != 0:
-            VideoDB.add_dislikes(video_id, dislikes_to_add)
         if views_old != len(OPEN_STREAMS_USERS[video_id]):
             VideoDB.add_views(video_id, len(OPEN_STREAMS_USERS[video_id]) - views_old)
             views_old = len(OPEN_STREAMS_USERS[video_id])
             if len(OPEN_STREAMS_USERS[video_id]) > max_views:
                 max_views = len(OPEN_STREAMS_USERS[video_id])
     # send stream summery to the creator
+    likes = ReactionDB.how_many_likes(video_id)
+    dislikes = ReactionDB.how_many_dislikes(video_id)
     EmailService.stream_summery(creator.get_email(), creator.get_uname(), stream_name, max_views, likes, dislikes)
+    ReactionDB.remove_all_reactions_video(video_id)
 
 
 def new_broadcaster(user, request):
@@ -112,7 +110,14 @@ def user_search(user, request):
         video_list = VideoDB.get_latest()
     else:
         video_list = VideoDB.search_video(request["keyword"])
-    message = {"type": "result", "results": video_list}
+    video_and_reaction_list = []
+    for video in video_list:
+        name, creator, views, vid = video
+        likes = ReactionDB.how_many_likes(vid)
+        dislikes = ReactionDB.how_many_dislikes(vid)
+        current_reaction = ReactionDB.get_reaction(vid, user.get_email())
+        video_and_reaction_list += [(name, creator, views, vid, likes, dislikes, current_reaction)]
+    message = {"type": "result", "results": video_and_reaction_list}
     user.send_message(message)
 
 

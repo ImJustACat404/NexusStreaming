@@ -9,6 +9,15 @@ from UIConst import *
 import PopupService
 
 
+def stringify_number(num):
+    if num < 1000:
+        return str(num)
+    elif 1000 < num < 1000000:
+        return str(num / 1000) + 'K'
+    else:
+        return str(num / 1000000) + 'M'
+
+
 class VideoSelectionForm:
     def __init__(self, server_socket, aes_cypher):
         self.server_socket = server_socket
@@ -50,21 +59,23 @@ class VideoSelectionForm:
         self.hide()
 
     def update_tiles(self):
+        print(self.video_list)
         video_index = self.current_page * 9  # set as the first video
         for frame in self.video_frames:
             if video_index < len(self.video_list):
                 frame[0].show()
                 frame[1].show()
-                frame[1].set_text(f"\n  {self.video_list[video_index][0]}\n     Creator: {self.video_list[video_index][1]}\n     Views: {self.video_list[video_index][4]}")
+                frame[1].set_text(f"\n  {self.video_list[video_index][0]}\n     Creator: {self.video_list[video_index][1]}\n     Views: {self.video_list[video_index][2]}\n     Likes: {self.video_list[video_index][4]}  Dislikes: {self.video_list[video_index][5]}")
             else:
                 frame[0].hide()
                 frame[1].hide()
             video_index += 1
+        last_page = ((len(self.video_list)) / 9) + (len(self.video_list) % 9)
         if self.current_page > 0:
             self.previous_button.show()
         else:
             self.previous_button.hide()
-        if self.current_page < 4:
+        if self.current_page < last_page:
             self.next_button.show()
         else:
             self.next_button.hide()
@@ -80,8 +91,7 @@ class VideoSelectionForm:
 
     def watch_video(self, button_index, switch_to_player_callback, set_video_callback, start_video_watch_callback):
         selected_video = self.video_list[self.current_page * 9 + button_index]
-        print(selected_video)
-        message = {"type": "watch", "vid": selected_video[5]}
+        message = {"type": "watch", "vid": selected_video[3]}
         Communication.send_message_aes(self.server_socket, message, self.aes_cypher)
         response = Communication.recv_message_aes(self.server_socket, self.aes_cypher)
         if response["status"]:
