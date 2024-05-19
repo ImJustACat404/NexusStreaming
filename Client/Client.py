@@ -69,13 +69,17 @@ def video_send_stream(server_socket, aes_cypher, is_screen):
         vid_stream = ImageStream.CameraStream()
     audio_stream = AudioRecord.AudioStream()
     STREAM_OPEN = True
-    while STREAM_OPEN:  # make it close when press stop
-        video_msg = {"type": "frame", "data": vid_stream.get_current_frame()}
-        Communication.send_message_aes(server_socket, video_msg, aes_cypher)
-        audio_msg = {"type": "audio", "data": audio_stream.get_current_audio()}
-        Communication.send_message_aes(server_socket, audio_msg, aes_cypher)
-    Communication.send_message_aes(server_socket, {"type": "close"}, aes_cypher)
-    audio_stream.terminate()
+    try:
+        while STREAM_OPEN:  # make it close when press stop
+            video_msg = {"type": "frame", "data": vid_stream.get_current_frame()}
+            Communication.send_message_aes(server_socket, video_msg, aes_cypher)
+            audio_msg = {"type": "audio", "data": audio_stream.get_current_audio()}
+            Communication.send_message_aes(server_socket, audio_msg, aes_cypher)
+        Communication.send_message_aes(server_socket, {"type": "close"}, aes_cypher)
+        audio_stream.terminate()
+    except OSError:
+        # socket was closed
+        audio_stream.terminate()
 
 
 def video_play_stream(server_socket, aes_cypher):
