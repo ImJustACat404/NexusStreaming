@@ -1,0 +1,10 @@
+PyAudio~=0.2.14
+numpy~=1.26.1
+pygame~=2.5.2
+opencv-python~=4.8.1.78
+PyAutoGUI~=0.9.54
+msgpack~=1.0.7
+yagmail~=0.15.293
+requests~=2.31.0
+pydub~=0.25.1
+pillow~=10.2.0
