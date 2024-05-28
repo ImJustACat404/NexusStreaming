@@ -115,7 +115,7 @@ def send_message_aes(sock, message, cypher):
     :param cypher: An object used to encrypt and decrypt data using AES
     :type cypher: AESCypher
     """
-    #print("[--->]" + str(message)[:100])
+    print("[--->]" + str(message)[:100])
     packed_message = msgpack.packb(message)
     encrypted_message = cypher.aes_encrypt(packed_message)
     sock.sendall(str(len(encrypted_message)).zfill(LEN_LEN).encode() + encrypted_message)
@@ -135,5 +135,5 @@ def recv_message_aes(sock, cypher):
     encrypted_message = _recvall(sock, message_length)
     packed_message = cypher.aes_decrypt(encrypted_message)
     message = msgpack.unpackb(packed_message)
-    #print("[<---]" + str(message)[:100])
+    print("[<---]" + str(message)[:100])
     return message

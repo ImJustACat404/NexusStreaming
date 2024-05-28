@@ -1,6 +1,17 @@
 import pygame
 pygame.init()
 
+
+def _open_image(path):
+    try:
+        with open(path, "rb") as image_file:
+            image_bytes = image_file.read()
+        return image_bytes
+    except Exception as error:
+        print(f"Could not open file! error: {error}")
+        return b''
+
+
 # Colors
 BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
@@ -18,12 +29,14 @@ DEFAULT_FONT_BIG = pygame.font.Font(None, 54)
 
 # Pics
 EMPTY_SCREEN = "img/empty.jpeg"
+EMPTY_SCREEN_BYTES = _open_image(EMPTY_SCREEN)
 SEARCH_ICON = "img/search.png"
 DISLIKE_ICON = "img/dislike.png"
 LIKE_ICON = "img/like.png"
 UNDISLIKE_ICON = "img/undislike.png"
 UNLIKE_ICON = "img/unlike.png"
 LOGO = "img/logo.png"
+LOGO_BYTES = _open_image(LOGO)
 LOGO_SMALL = "img/logo_small.png"
 NEXT_ICON = "img/next.png"
 PREV_ICON = "img/previous.png"

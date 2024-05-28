@@ -7,6 +7,18 @@ import Communication
 from UIConst import *
 
 
+def _password_edit(self):
+    # outside because of a bug in pygame widgets
+    current_value = self.password_textbox.getText()
+    if len(current_value) > len(self.password_textbox_value):
+        # Added a letter
+        self.password_textbox_value += current_value[len(self.password_textbox_value):]  # Add new part
+        self.password_textbox.setText('*' * len(current_value))
+    else:
+        # Deleted a letter
+        self.password_textbox_value = self.password_textbox_value[:len(current_value)]
+
+
 class LogInForm:
     def __init__(self, server_socket, aes_cypher):
         self.server_socket = server_socket
@@ -15,9 +27,7 @@ class LogInForm:
         self.size_x = 600
         self.size_y = 500
         self.win = pygame.display.set_mode((self.size_x, self.size_y))
-        with open(LOGO, "rb") as logo_file:
-            logo_bytes = logo_file.read()
-        self.title_image = Image(self.win, logo_bytes, 309, 159, (138, 0))
+        self.title_image = Image(self.win, LOGO_BYTES, 309, 159, (138, 0))
         self.email_label = Label(self.win, "E-Mail:", (100, 140), DEFAULT_FONT_SMALL, BLACK)
         self.email_textbox = TextBox(self.win, 100, 160, 400, 40,
                                      fontSize=20,
@@ -31,7 +41,10 @@ class LogInForm:
                                         borderColour=BLUE,
                                         textColour=BLACK,
                                         radius=10,
-                                        borderThickness=3)
+                                        borderThickness=3,
+                                        onTextChanged=_password_edit,
+                                        onTextChangedParams=(self,))
+        self.password_textbox_value = ""
         self.login_button = Button(self.win, 320, 300, 150, 30,
                                    text="login",
                                    radius=30,
@@ -78,7 +91,7 @@ class LogInForm:
         return self.title
 
     def _login_request(self, successful_connection_callback):
-        message = {"type": "login", "email": self.email_textbox.getText(), "password": self.password_textbox.getText()}
+        message = {"type": "login", "email": self.email_textbox.getText(), "password": self.password_textbox_value}
         Communication.send_message_aes(self.server_socket, message, self.aes_cypher)
         response = Communication.recv_message_aes(self.server_socket, self.aes_cypher)
         if response["status"]:

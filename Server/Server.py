@@ -34,8 +34,6 @@ def broadcast(creator, video_id):
     stream_open = True
     stream_name = VideoDB.get_video_data(video_id)[0]
     while stream_open:
-        print(CONNECTED_USERS.values())
-        print(OPEN_STREAMS_USERS.keys())
         ready_to_read, ready_to_write, in_error = select.select(OPEN_STREAMS_USERS[video_id] + [creator.get_socket()], OPEN_STREAMS_USERS[video_id], [])
         for read_socket in ready_to_read:
             read_user = CONNECTED_USERS[read_socket]

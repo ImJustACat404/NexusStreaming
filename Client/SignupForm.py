@@ -7,6 +7,18 @@ import Communication
 from UIConst import *
 
 
+def _password_edit(self):
+    # outside because of a bug in pygame widgets
+    current_value = self.password_textbox.getText()
+    if len(current_value) > len(self.password_textbox_value):
+        # Added a letter
+        self.password_textbox_value += current_value[len(self.password_textbox_value):]  # Add new part
+        self.password_textbox.setText('*' * len(current_value))
+    else:
+        # Deleted a letter
+        self.password_textbox_value = self.password_textbox_value[:len(current_value)]
+
+
 class SignUpForm:
     def __init__(self, server_socket, aes_cypher):
         self.server_socket = server_socket
@@ -15,15 +27,15 @@ class SignUpForm:
         self.size_x = 600
         self.size_y = 500
         self.win = pygame.display.set_mode((self.size_x, self.size_y))
-        with open(LOGO, "rb") as logo_file:
-            logo_bytes = logo_file.read()
-        self.title_image = Image(self.win, logo_bytes, 309, 159, (138, 0))
+        self.title_image = Image(self.win, LOGO_BYTES, 309, 159, (138, 0))
         self.email_label = Label(self.win, "E-Mail:", (100, 140), DEFAULT_FONT_SMALL, BLACK)
         self.email_textbox = TextBox(self.win, 100, 160, 400, 40, fontSize=20, borderColour=BLUE, textColour=BLACK,
                                      radius=10, borderThickness=3)
         self.password_label = Label(self.win, "Password:", (100, 220), DEFAULT_FONT_SMALL, BLACK)
         self.password_textbox = TextBox(self.win, 100, 240, 400, 40, fontSize=20, borderColour=BLUE, textColour=BLACK,
-                                        radius=10, borderThickness=3)
+                                        radius=10, borderThickness=3, onTextChanged=_password_edit,
+                                        onTextChangedParams=(self,))
+        self.password_textbox_value = ""
         self.uname_label = Label(self.win, "Username:", (100, 300), DEFAULT_FONT_SMALL, BLACK)
         self.uname_textbox = TextBox(self.win, 100, 320, 400, 40, fontSize=20, borderColour=BLUE, textColour=BLACK,
                                      radius=10, borderThickness=3)
@@ -76,7 +88,7 @@ class SignUpForm:
         """
         # type="signup",  email=string, password=string, uname=string
         message = {"type": "signup", "email": self.email_textbox.getText(), "uname": self.uname_textbox.getText(),
-                   "password": self.password_textbox.getText()}
+                   "password": self.password_textbox_value}
         Communication.send_message_aes(self.server_socket, message, self.aes_cypher)
         response = Communication.recv_message_aes(self.server_socket, self.aes_cypher)
         if response["status"]:

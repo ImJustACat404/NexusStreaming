@@ -16,10 +16,12 @@ def hash_data(data, salt):
 
 
 def is_email_in_system(user_email):
+    print("[-R-] User DB Access")
     with DB_LOCK:
         saved_users_db = sqlite3.connect(DATABASE_LOCATION)
         user_db_cursor = saved_users_db.cursor()
-        user_db_cursor.execute(f"SELECT Email from Users WHERE Email=?", (user_email,))
+        query = "SELECT Email from Users WHERE Email=?"
+        user_db_cursor.execute(query, (user_email,))
         output = user_db_cursor.fetchall()
         user_db_cursor.close()
         saved_users_db.close()
@@ -30,20 +32,21 @@ def is_email_in_system(user_email):
 
 
 def add_user(uname, password, email):
+    print("[-W-] User DB Access")
     with DB_LOCK:
         saved_users_db = sqlite3.connect(DATABASE_LOCATION)
         user_db_cursor = saved_users_db.cursor()
         salt = os.urandom(32)  # creates salt for the user
         # Add new user
-        user_db_cursor.execute("INSERT INTO Users "
-                               "(UName, Password, Email, Salt) "
-                               "VALUES (?, ?, ?, ?)", (uname, hash_data(password, salt), email, salt))
+        query = "INSERT INTO Users (UName, Password, Email, Salt) VALUES (?, ?, ?, ?)"
+        user_db_cursor.execute(query, (uname, hash_data(password, salt), email, salt))
         saved_users_db.commit()
         user_db_cursor.close()
         saved_users_db.close()
 
 
 def validate_password(input_password, user_email):
+    print("[-R-] User DB Access")
     with DB_LOCK:
         saved_users_db = sqlite3.connect(DATABASE_LOCATION)
         user_db_cursor = saved_users_db.cursor()
@@ -61,6 +64,7 @@ def validate_password(input_password, user_email):
 
 
 def get_user_name(email):
+    print("[-R-] User DB Access")
     with DB_LOCK:
         saved_users_db = sqlite3.connect(DATABASE_LOCATION)
         user_db_cursor = saved_users_db.cursor()

@@ -34,9 +34,7 @@ class PlayerForm:
         self.unlike_button = Button(self.win, 550, 450, 90, 40, text="0", textHAlign='right', textVAlign='centre', image=pygame.transform.scale(unscaled_unlike_icon, (25, 25)), imageHAlign='left', radius=10)
         unscaled_undislike_icon = pygame.image.load(UNDISLIKE_ICON)
         self.undislike_button = Button(self.win, 650, 450, 90, 40, text="0", textHAlign='right', textVAlign='centre', image=pygame.transform.scale(unscaled_undislike_icon, (25, 25)), imageHAlign='left', radius=10)
-        with open(EMPTY_SCREEN, "rb") as image_file:
-            jpeg_bytes = image_file.read()
-        self.image = Image(self.win, jpeg_bytes, 712, 400, (45, 30))
+        self.image = Image(self.win, EMPTY_SCREEN_BYTES, 712, 400, (45, 30))
         self.close_button = Button(self.win, 550, 500, 190, 80, text="Close", font=DEFAULT_FONT_BIG, radius=10)
         self.current_reaction = 0
         self.hide()

@@ -9,11 +9,12 @@ DB_LOCK = threading.Lock()
 
 
 def add_video(video_name, creator):
+    print("[-W-] Video DB Access")
     with DB_LOCK:
         database = sqlite3.connect(DATABASE_LOCATION)
         db_cursor = database.cursor()
-        db_cursor.execute("INSERT INTO Videos (Name, Creator, views) VALUES (?, ?, ?)",
-                          (video_name, creator, 0))
+        query = "INSERT INTO Videos (Name, Creator, views) VALUES (?, ?, ?)"
+        db_cursor.execute(query, (video_name, creator, 0))
         video_id = db_cursor.lastrowid
         database.commit()
         db_cursor.close()
@@ -22,6 +23,7 @@ def add_video(video_name, creator):
 
 
 def get_latest():
+    print("[-R-] Video DB Access")
     with DB_LOCK:
         database = sqlite3.connect(DATABASE_LOCATION)
         db_cursor = database.cursor()
@@ -34,6 +36,7 @@ def get_latest():
 
 
 def search_video(keyword):
+    print("[-R-] Video DB Access")
     with DB_LOCK:
         database = sqlite3.connect(DATABASE_LOCATION)
         db_cursor = database.cursor()
@@ -46,6 +49,7 @@ def search_video(keyword):
 
 
 def get_video_data(video_id):
+    print("[-R-] Video DB Access")
     with DB_LOCK:
         database = sqlite3.connect(DATABASE_LOCATION)
         db_cursor = database.cursor()
@@ -58,6 +62,7 @@ def get_video_data(video_id):
 
 
 def add_views(video_id, views_to_add):
+    print("[-W-] Video DB Access")
     with DB_LOCK:
         database = sqlite3.connect(DATABASE_LOCATION)
         db_cursor = database.cursor()
@@ -69,6 +74,7 @@ def add_views(video_id, views_to_add):
 
 
 def is_video_in_db(video_id):
+    print("[-R-] Video DB Access")
     with DB_LOCK:
         database = sqlite3.connect(DATABASE_LOCATION)
         db_cursor = database.cursor()
@@ -84,6 +90,7 @@ def is_video_in_db(video_id):
 
 
 def remove_video(video_id):
+    print("[-W-] Video DB Access")
     with DB_LOCK:
         database = sqlite3.connect(DATABASE_LOCATION)
         db_cursor = database.cursor()

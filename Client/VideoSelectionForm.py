@@ -1,5 +1,6 @@
 __author__ = "Ido Senn"
 
+import math
 import threading
 from pygame_widgets.textbox import TextBox
 from pygame_widgets.button import Button
@@ -70,7 +71,8 @@ class VideoSelectionForm:
                 frame[0].hide()
                 frame[1].hide()
             video_index += 1
-        last_page = ((len(self.video_list)) / 9) + (len(self.video_list) % 9)
+        last_page = math.ceil(len(self.video_list) / 9) - 1
+        print(f"current page: {self.current_page}   last page: {last_page}")
         if self.current_page > 0:
             self.previous_button.show()
         else:
