@@ -7,12 +7,19 @@ from UIConst import *
 
 
 def stringify_number(num):
+    """
+    A function that takes a number and returns it as a shorter string
+    :param num: The number to make shorter
+    :type num: int
+    :return: The short number
+    :rtype: str
+    """
     if num < 1000:
         return str(num)
     elif 1000 < num < 1000000:
-        return str(num / 1000) + 'K'
+        return str(round(num / 1000)) + 'K'
     else:
-        return str(num / 1000000) + 'M'
+        return str(round(num / 1000000)) + 'M'
 
 
 class PlayerForm:
@@ -40,17 +47,26 @@ class PlayerForm:
         self.hide()
 
     def show_reactions(self):
+        """
+        A function that shows the reactions, according to the status of the user's reaction (like, dislike...)
+        """
         if self.current_reaction == 0:
+            # No reaction
             self.like_button.show()
             self.dislike_button.show()
         elif self.current_reaction == 1:
+            # Like
             self.unlike_button.show()
             self.dislike_button.show()
         elif self.current_reaction == -1:
+            # Dislike
             self.like_button.show()
             self.undislike_button.show()
 
     def show(self):
+        """
+        Show all parts of the form
+        """
         self.broadcaster_name_label.show()
         self.video_title_label.show()
         self.views_label.show()
@@ -59,6 +75,9 @@ class PlayerForm:
         self.show_reactions()
 
     def hide(self):
+        """
+        hide all parts of the form
+        """
         self.broadcaster_name_label.hide()
         self.video_title_label.hide()
         self.views_label.hide()
@@ -70,9 +89,14 @@ class PlayerForm:
         self.close_button.hide()
 
     def set_video(self, video_data):
+        """
+        A function that sets the values of the window to a selected video
+        :param video_data: Information about the video
+        :type video_data: tuple
+        """
         video_name, creator, views, vid, likes, dislikes, current_reaction = video_data
         self.current_reaction = current_reaction
-        self.video_title_label.set_text(video_name)
+        self.video_title_label.set_text(video_name[:16])
         self.broadcaster_name_label.set_text(creator)
         self.like_button.setText(stringify_number(likes))
         self.unlike_button.setText(stringify_number(likes))
@@ -81,7 +105,10 @@ class PlayerForm:
         self.views_label.set_text(f"Views: {stringify_number(views)}")
 
     def like(self):
-        self.current_reaction = 1
+        """
+        A function called when the like button is presses. changes widgets and sends data to server.
+        """
+        self.current_reaction = 1  # set reaction to like
         self.like_button.hide()
         self.unlike_button.show()
         self.undislike_button.hide()
@@ -90,7 +117,10 @@ class PlayerForm:
         Communication.send_message_aes(self.server_socket, message, self.aes_cypher)
 
     def dislike(self):
-        self.current_reaction = -1
+        """
+        A function called when the dislike button is presses. changes widgets and sends data to server.
+        """
+        self.current_reaction = -1  # set reaction to dislike
         self.dislike_button.hide()
         self.undislike_button.show()
         self.unlike_button.hide()
@@ -99,34 +129,65 @@ class PlayerForm:
         Communication.send_message_aes(self.server_socket, message, self.aes_cypher)
 
     def unlike(self):
-        self.current_reaction = 0
+        """
+        A function called when the unlike button is presses. changes widgets and sends data to server.
+        """
+        self.current_reaction = 0  # changes reaction to no reaction
         self.unlike_button.hide()
         self.like_button.show()
         message = {"type": "reaction", "reaction": "remove"}
         Communication.send_message_aes(self.server_socket, message, self.aes_cypher)
 
     def undislike(self):
-        self.current_reaction = 0
+        """
+        A function called when the undislike button is presses. changes widgets and sends data to server.
+        """
+        self.current_reaction = 0  # Changes reaction to no reaction
         self.undislike_button.hide()
         self.dislike_button.show()
         message = {"type": "reaction", "reaction": "remove"}
         Communication.send_message_aes(self.server_socket, message, self.aes_cypher)
 
     def set_frame(self, jpeg_bytes):
+        """
+        Set the current image displayed on the frame
+        :param jpeg_bytes: Current frame to be displayed
+        :type jpeg_bytes: bytes
+        """
         self.image.set_image(jpeg_bytes)
 
     def get_size(self):
+        """
+        Get size of the form window
+        :return: size of the screen
+        :rtype: tuple
+        """
         return self.size_x, self.size_y
 
     def get_title(self):
+        """
+        Get the title of the Form
+        :return: Form title
+        :rtype: string
+        """
         return self.title
 
     def close_stream(self, close_stream_event):
+        """
+        A function to be called when the close button is closed (closes the stream)
+        :param close_stream_event: A function that closes the stream
+        :type close_stream_event: Callback
+        """
         message = {"type": "close"}
         Communication.send_message_aes(self.server_socket, message, self.aes_cypher)
         pygame.event.post(pygame.event.Event(close_stream_event))
 
     def button_event_innit(self, close_stream_event):
+        """
+        A function that sets the events for all the buttons in the form
+        :param close_stream_event: A function that closes the stream
+        :type close_stream_event: Callback
+        """
         self.like_button.setOnClick(lambda func=self.like: func())
         self.dislike_button.setOnClick(lambda func=self.dislike: func())
         self.unlike_button.setOnClick(lambda func=self.unlike: func())

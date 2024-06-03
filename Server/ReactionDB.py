@@ -9,6 +9,13 @@ DB_LOCK = threading.Lock()
 
 
 def remove_reaction(vid, user_mail):
+    """
+    A function that removes a reaction from the database
+    :param vid: Video ID of the stream
+    :type vid: int
+    :param user_mail: The client's email address
+    :type user_mail: str
+    """
     print("[-W-] Reaction DB Access")
     with DB_LOCK:
         database = sqlite3.connect(DATABASE_LOCATION)
@@ -21,6 +28,15 @@ def remove_reaction(vid, user_mail):
 
 
 def add_reaction(vid, user_mail, reaction):
+    """
+    A function that adds a reaction to the database
+    :param vid: Video ID of the stream
+    :type vid: int
+    :param user_mail: The client's email address
+    :type user_mail: str
+    :param reaction: The reaction to add (1 - like, -1 - dislike)
+    :type reaction: int
+    """
     print("[-W-] Reaction DB Access")
     # remove current reaction
     remove_reaction(vid, user_mail)
@@ -35,6 +51,11 @@ def add_reaction(vid, user_mail, reaction):
 
 
 def remove_all_reactions_user(user_mail):
+    """
+    A function that removes all the reactions for a specific user
+    :param user_mail: The client's email address
+    :type user_mail: str
+    """
     print("[-W-] Reaction DB Access")
     with DB_LOCK:
         database = sqlite3.connect(DATABASE_LOCATION)
@@ -47,6 +68,11 @@ def remove_all_reactions_user(user_mail):
 
 
 def remove_all_reactions_video(vid):
+    """
+    A function that removes all the reactions for a specific stream
+    :param vid: Video ID of the stream
+    :type vid: int
+    """
     print("[-W-] Reaction DB Access")
     with DB_LOCK:
         database = sqlite3.connect(DATABASE_LOCATION)
@@ -59,6 +85,15 @@ def remove_all_reactions_video(vid):
 
 
 def get_reaction(vid, user_mail):
+    """
+    Get reaction for a specific client, for a specific stream
+    :param vid: Video ID of the stream
+    :type vid: int
+    :param user_mail: The client's email address
+    :type user_mail: str
+    :return: The client's reaction
+    :rtype: int
+    """
     print("[-R-] Reaction DB Access")
     with DB_LOCK:
         database = sqlite3.connect(DATABASE_LOCATION)
@@ -75,6 +110,12 @@ def get_reaction(vid, user_mail):
 
 
 def how_many_likes(vid):
+    """
+    A function that returns the number of likes for a specific stream
+    :param vid: Video ID of the stream
+    :type vid: int
+    :return: A list of the stream's reactions
+    """
     print("[-R-] Reaction DB Access")
     with DB_LOCK:
         database = sqlite3.connect(DATABASE_LOCATION)
@@ -88,6 +129,12 @@ def how_many_likes(vid):
 
 
 def how_many_dislikes(vid):
+    """
+    A function that returns the number of dislikes for a specific stream
+    :param vid: Video ID of the stream
+    :type vid: int
+    :return: A list of the stream's reactions
+    """
     print("[-R-] Reaction DB Access")
     with DB_LOCK:
         database = sqlite3.connect(DATABASE_LOCATION)

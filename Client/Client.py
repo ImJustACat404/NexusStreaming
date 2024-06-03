@@ -22,6 +22,7 @@ import PopupService
 pygame.init()
 
 
+# Communication constants
 SERVER_IP = "127.0.0.1"
 SERVER_PORT = 8001
 
@@ -37,22 +38,23 @@ STREAM_CLOSE_EVENT_SEND = pygame.USEREVENT + 2
 def close_program(server_socket):
     """
     A function called when the program is being closed
-    :return:
     """
-    # Close threads
     global STREAM_OPEN, SOFTWARE_CLOSED
+    # Set program as closed (used by other threads)
     SOFTWARE_CLOSED = True
+    # Close currently open streams
     STREAM_OPEN = False
     # Close socket
     server_socket.close()
     # Close pygame
     pygame.quit()
+    # close program
     quit()
 
 
 def video_send_stream(server_socket, aes_cypher, is_screen):
     """
-    Sharing video and audio with server
+    Sharing video and audio with the server
     :param server_socket: socket for server communications
     :type server_socket: socket.socket
     :param aes_cypher: An object used to encrypt and decrypt data using AES
@@ -63,23 +65,55 @@ def video_send_stream(server_socket, aes_cypher, is_screen):
     # stream details: (vid, is_screen)
     global STREAM_OPEN
     # start the camera and mic
-    if is_screen:
-        vid_stream = ImageStream.ScreenStream()
-    else:
-        vid_stream = ImageStream.CameraStream()
-    audio_stream = AudioRecord.AudioStream()
-    STREAM_OPEN = True
+    audio_stream = None
     try:
-        while STREAM_OPEN:  # make it close when press stop
-            video_msg = {"type": "frame", "data": vid_stream.get_current_frame()}
-            Communication.send_message_aes(server_socket, video_msg, aes_cypher)
-            audio_msg = {"type": "audio", "data": audio_stream.get_current_audio()}
-            Communication.send_message_aes(server_socket, audio_msg, aes_cypher)
+        if is_screen:
+            # User selected screen sharing
+            vid_stream = ImageStream.ScreenStream()
+        else:
+            # User selected camera sharing
+            vid_stream = ImageStream.CameraStream()
+        # Create audio input stream
+        audio_stream = AudioRecord.AudioStream()
+        STREAM_OPEN = True  # Set program to stream mode
+        try:
+            while STREAM_OPEN:  # closes when user presses stop
+                # send image data to server
+                video_msg = {"type": "frame", "data": vid_stream.get_current_frame()}
+                Communication.send_message_aes(server_socket, video_msg, aes_cypher)
+                # send audio data to server
+                audio_msg = {"type": "audio", "data": audio_stream.get_current_audio()}
+                Communication.send_message_aes(server_socket, audio_msg, aes_cypher)
+            # stream closed
+            Communication.send_message_aes(server_socket, {"type": "close"}, aes_cypher)  # notify server
+            audio_stream.terminate()  # close audio stream
+        except OSError:
+            # socket was closed
+            audio_stream.terminate()
+        except Exception as e:
+            # Hardware error, lost access while in stream
+            print(f"Could not access hardware! Error: {e}")
+            Communication.send_message_aes(server_socket, {"type": "close"}, aes_cypher)  # notify server
+            if audio_stream is not None:  # close audio stream if there is one
+                audio_stream.terminate()
+            # call send stream close event (changes screens)
+            pygame.event.post(pygame.event.Event(STREAM_CLOSE_EVENT_SEND))
+            # notify user
+            PopupService.error_popup("Hardware Error",
+                                     "Could not connect to hardware devices!\n"
+                                     "Make sure that a microphone and camera are connected and try again!")
+    except Exception as e:
+        # Hardware error, lost access before connecting to stream
+        print(f"Could not access hardware! Error: {e}")
         Communication.send_message_aes(server_socket, {"type": "close"}, aes_cypher)
-        audio_stream.terminate()
-    except OSError:
-        # socket was closed
-        audio_stream.terminate()
+        pygame.event.post(pygame.event.Event(STREAM_CLOSE_EVENT_SEND)) # call send stream close event (changes screens)
+        STREAM_OPEN = True  # Set program to stream mode to deal with socket - emptying mechanism
+        if audio_stream is not None:  # close audio stream if there is one
+            audio_stream.terminate()
+        # notify user
+        PopupService.error_popup("Hardware Error",
+                                 "Could not connect to hardware devices!\n"
+                                 "Make sure that a microphone and camera are connected and try again!")
 
 
 def video_play_stream(server_socket, aes_cypher):
@@ -90,19 +124,44 @@ def video_play_stream(server_socket, aes_cypher):
     :param aes_cypher: An object used to encrypt and decrypt data using AES
     :type aes_cypher: AESCypher
     """
-    audio_stream = AudioPlay.AudioStream()
     global STREAM_OPEN
-    STREAM_OPEN = True
-    while STREAM_OPEN:
-        message = Communication.recv_message_aes(server_socket, aes_cypher)
-        if message["type"] == "audio":
-            audio_stream.play_audio(message["data"])
-        elif message["type"] == "frame":
-            WINDOW_FORMS["player"].set_frame(message["data"])
-        elif message["type"] == "close":
+    try:
+        audio_stream = AudioPlay.AudioStream()
+    except Exception as e:
+        # no audio output device
+        print(f"Could not access hardware! Error: {e}")
+        message = {"type": "close"}  # notify server
+        Communication.send_message_aes(server_socket, message, aes_cypher)
+        # notify user
+        PopupService.error_popup("Hardware Error",
+                                 "Could not connect to hardware devices!\n"
+                                 "Make sure that a microphone and camera are connected and try again!")
+    STREAM_OPEN = True  # set program to stream mode
+    while STREAM_OPEN:  # while user didn't close stream
+        message = Communication.recv_message_aes(server_socket, aes_cypher)  # recv stream piece
+        if message["type"] == "close":
+            # if stream closed (server side), quit loop
             STREAM_OPEN = False
-    audio_stream.terminate()
-    pygame.event.post(pygame.event.Event(STREAM_CLOSE_EVENT_PLAY))
+            break
+        elif message["type"] == "audio":
+            # data is audio
+            try:
+                audio_stream.play_audio(message["data"])
+            except Exception as e:
+                # Speaker disconnected while playing
+                print(f"Could not access hardware! Error: {e}")
+                message = {"type": "close"}  # notify server
+                Communication.send_message_aes(server_socket, message, aes_cypher)
+                message = Communication.recv_message_aes(server_socket, aes_cypher)
+                while message["type"] != "close":
+                    # empty socket
+                    message = Communication.recv_message_aes(server_socket, aes_cypher)
+                STREAM_OPEN = False  # close stream
+        elif message["type"] == "frame":
+            # data is image
+            WINDOW_FORMS["player"].set_frame(message["data"])  # send to UI
+    audio_stream.terminate()  # close audio stream
+    pygame.event.post(pygame.event.Event(STREAM_CLOSE_EVENT_PLAY))  # call stream playing close event (change window)
 
 
 def event_innit(window_forms):
@@ -164,19 +223,23 @@ def start_ui(server_socket, aes_cypher):
         events = pygame.event.get()
         for event in events:
             if event.type == pygame.QUIT:
+                # pressed window 'x'
                 close_program(server_socket)
             elif event.type == STREAM_CLOSE_EVENT_SEND:
+                # closed stream sending
                 while not STREAM_OPEN:
                     pass  # to handle case where client presses close button before the stream starts
-                STREAM_OPEN = False
+                STREAM_OPEN = False  # set stream mode to false
                 Forms.change_form(WINDOW_FORMS["newStream"], WINDOW_FORMS["connectionSuccessful"])
             elif event.type == STREAM_CLOSE_EVENT_PLAY:
+                # closed stream playing
                 if SOFTWARE_CLOSED:
+                    # handle case where the stream closed because the program closed
                     exit()
                 Forms.change_form(WINDOW_FORMS["player"], WINDOW_FORMS["connectionSuccessful"])
-        win.fill((255, 255, 255))  # white
-        Forms.update(events)
-        pygame.display.update()
+        win.fill((255, 255, 255))  # white background
+        Forms.update(events)  # update all window forms
+        pygame.display.update()  # update display
 
 
 def main():
@@ -185,6 +248,7 @@ def main():
     """
     print("Connecting to server . . .")
     try:
+        # distribute AES key with RSA
         server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         server_socket.connect((SERVER_IP, SERVER_PORT))
         print("Connected!")
@@ -202,7 +266,11 @@ def main():
         print("Done!")
         start_ui(server_socket, aes_cypher)
     except ConnectionRefusedError:
+        # Server down
         PopupService.error_popup("Could nor connect to server", "Could not connect to server, please try again later")
+    except Exception as error:
+        # error I did not encounter
+        PopupService.error_popup("Fatal Error!", f"Fatal error!\n{error}")
 
 
 if __name__ == "__main__":

@@ -9,6 +9,15 @@ DB_LOCK = threading.Lock()
 
 
 def add_video(video_name, creator):
+    """
+    A function that adds a new video to the database
+    :param video_name: The video's title
+    :type video_name: str
+    :param creator: The name of the creator
+    :type creator: str
+    :return: The video's ID, for future use with the system
+    :rtype: int
+    """
     print("[-W-] Video DB Access")
     with DB_LOCK:
         database = sqlite3.connect(DATABASE_LOCATION)
@@ -23,6 +32,11 @@ def add_video(video_name, creator):
 
 
 def get_latest():
+    """
+    A function that returns a list of the latest streams
+    :return: A list of the most recent streams
+    :rtype: list
+    """
     print("[-R-] Video DB Access")
     with DB_LOCK:
         database = sqlite3.connect(DATABASE_LOCATION)
@@ -36,6 +50,13 @@ def get_latest():
 
 
 def search_video(keyword):
+    """
+    A function that returns a list of videos with titles like the keyword
+    :param keyword: a keyword to search
+    :type keyword: str
+    :return: A list of the most recent streams
+    :rtype: list
+    """
     print("[-R-] Video DB Access")
     with DB_LOCK:
         database = sqlite3.connect(DATABASE_LOCATION)
@@ -49,6 +70,13 @@ def search_video(keyword):
 
 
 def get_video_data(video_id):
+    """
+    A function that returns the saved data fpr a specific video
+    :param video_id: The video's unique ID
+    :type video_id: int
+    :return: The saved data for this video
+    :rtype: list
+    """
     print("[-R-] Video DB Access")
     with DB_LOCK:
         database = sqlite3.connect(DATABASE_LOCATION)
@@ -62,6 +90,13 @@ def get_video_data(video_id):
 
 
 def add_views(video_id, views_to_add):
+    """
+    A function that adds views to a specific video
+    :param video_id: The video's unique ID
+    :type video_id: int
+    :param views_to_add: Number of views to increment the saved value
+    :type views_to_add: int
+    """
     print("[-W-] Video DB Access")
     with DB_LOCK:
         database = sqlite3.connect(DATABASE_LOCATION)
@@ -74,6 +109,13 @@ def add_views(video_id, views_to_add):
 
 
 def is_video_in_db(video_id):
+    """
+    A function that checks if a video is in the database
+    :param video_id: The video's unique ID
+    :type video_id: int
+    :return: True if the video is in the database, False otherwise
+    :rtype: bool
+    """
     print("[-R-] Video DB Access")
     with DB_LOCK:
         database = sqlite3.connect(DATABASE_LOCATION)
@@ -90,6 +132,11 @@ def is_video_in_db(video_id):
 
 
 def remove_video(video_id):
+    """
+    A function that removes a video from the database
+    :param video_id: The video's unique ID
+    :type video_id: int
+    """
     print("[-W-] Video DB Access")
     with DB_LOCK:
         database = sqlite3.connect(DATABASE_LOCATION)

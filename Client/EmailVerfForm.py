@@ -17,7 +17,7 @@ class EmailVerifyForm:
         self.size_y = 500
         self.win = pygame.display.set_mode((self.size_x, self.size_y))
 
-        self.main_label = Label(self.win, "A code was send to your email address. Please enter it here:", (0, 150), DEFAULT_FONT_SMALL, BLACK, "center")
+        self.main_label = Label(self.win, "A code was sent to your email address. Please enter it here:", (0, 150), DEFAULT_FONT_SMALL, BLACK, "center")
         self.code_textbox = TextBox(self.win, 250, 200, 100, 50, borderColour=BLUE, textColour=BLACK,
                                     radius=10, borderThickness=3)
         self.verify_button = Button(self.win, 200, 300, 200, 50, text="Verify",
@@ -26,22 +26,45 @@ class EmailVerifyForm:
         self.hide()
 
     def show(self):
+        """
+        Show all parts of the form
+        """
         self.main_label.show()
         self.code_textbox.show()
         self.verify_button.show()
 
     def hide(self):
+        """
+        hide all parts of the form
+        """
         self.main_label.hide()
         self.code_textbox.hide()
         self.verify_button.hide()
 
     def get_size(self):
+        """
+        Get size of the form window
+        :return: size of the screen
+        :rtype: tuple
+        """
         return self.size_x, self.size_y
 
     def get_title(self):
+        """
+        Get the title of the Form
+        :return: Form title
+        :rtype: string
+        """
         return self.title
 
     def verify_button_press(self, unsuccessful_callback, successful_callback):
+        """
+        A function called when the "verify" button is pressed
+        :param unsuccessful_callback: A callback to a function to be called when connection is unsuccessful
+        :type unsuccessful_callback: callback
+        :param successful_callback: A callback to a function to be called when connection is successful
+        :type successful_callback: callback
+        """
         code = self.code_textbox.getText()
         message = {"type": "code", "code": code}
         Communication.send_message_aes(self.server_socket, message, self.aes_cypher)
@@ -53,4 +76,11 @@ class EmailVerifyForm:
             unsuccessful_callback()
 
     def button_event_innit(self, successful_callback, unsuccessful_callback):
+        """
+        A function that sets the events for all the buttons in the form
+        :param unsuccessful_callback: A callback to a function to be called when connection is unsuccessful
+        :type unsuccessful_callback: callback
+        :param successful_callback: A callback to a function to be called when connection is successful
+        :type successful_callback: callback
+        """
         self.verify_button.setOnClick(lambda: self.verify_button_press(unsuccessful_callback, successful_callback))

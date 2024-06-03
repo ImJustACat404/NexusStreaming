@@ -53,8 +53,8 @@ def send_message_unsecure(sock, message):
     :type message: dict
     """
     print("[--->]" + str(message)[:100])
-    packed_message = msgpack.packb(message)
-    sock.sendall(str(len(packed_message)).zfill(LEN_LEN).encode() + packed_message)
+    packed_message = msgpack.packb(message)  # serialize dictionary
+    sock.sendall(str(len(packed_message)).zfill(LEN_LEN).encode() + packed_message)  # send data with length
 
 
 def recv_message_unsecure(sock):
@@ -66,7 +66,7 @@ def recv_message_unsecure(sock):
     :rtype: dict
     """
     message_length = int(sock.recv(LEN_LEN).decode())
-    message = msgpack.unpackb(_recvall(sock, message_length))
+    message = msgpack.unpackb(_recvall(sock, message_length))  # deserialize dictionary
     print("[<---]" + str(message)[:100])
     return message
 
@@ -82,9 +82,9 @@ def send_message_rsa(sock, message, cypher):
     :type cypher: Crypto.Cipher.PKCS1_OAEP.PKCS1OAEP_Cipher
     """
     print("[--->]" + str(message)[:100])
-    packed_message = msgpack.packb(message)
-    encrypted_message = cypher.encrypt(packed_message)
-    sock.sendall(str(len(encrypted_message)).zfill(LEN_LEN).encode() + encrypted_message)
+    packed_message = msgpack.packb(message)  # serialize dictionary
+    encrypted_message = cypher.encrypt(packed_message)  # Encrypt data with RSA
+    sock.sendall(str(len(encrypted_message)).zfill(LEN_LEN).encode() + encrypted_message)  # send data with length
 
 
 def recv_message_rsa(sock, cypher):
@@ -99,8 +99,8 @@ def recv_message_rsa(sock, cypher):
     """
     message_length = int(sock.recv(LEN_LEN).decode())
     encrypted_message = _recvall(sock, message_length)
-    packed_message = cypher.decrypt(encrypted_message)
-    message = msgpack.unpackb(packed_message)
+    packed_message = cypher.decrypt(encrypted_message)  # decrypt data with RSA
+    message = msgpack.unpackb(packed_message)  # deserialize dictionary
     print("[<---]" + str(message)[:100])
     return message
 
@@ -116,9 +116,9 @@ def send_message_aes(sock, message, cypher):
     :type cypher: AESCypher
     """
     print("[--->]" + str(message)[:100])
-    packed_message = msgpack.packb(message)
-    encrypted_message = cypher.aes_encrypt(packed_message)
-    sock.sendall(str(len(encrypted_message)).zfill(LEN_LEN).encode() + encrypted_message)
+    packed_message = msgpack.packb(message)  # serialize dictionary
+    encrypted_message = cypher.aes_encrypt(packed_message)  # Encrypt data with aes
+    sock.sendall(str(len(encrypted_message)).zfill(LEN_LEN).encode() + encrypted_message)  # send data with length
 
 
 def recv_message_aes(sock, cypher):
@@ -133,7 +133,7 @@ def recv_message_aes(sock, cypher):
     """
     message_length = int(sock.recv(LEN_LEN).decode())
     encrypted_message = _recvall(sock, message_length)
-    packed_message = cypher.aes_decrypt(encrypted_message)
-    message = msgpack.unpackb(packed_message)
+    packed_message = cypher.aes_decrypt(encrypted_message)  # Decrypt data with AES
+    message = msgpack.unpackb(packed_message)  # deserialize dictionary
     print("[<---]" + str(message)[:100])
     return message

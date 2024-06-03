@@ -28,10 +28,15 @@ class AudioStream:
 
     def terminate(self):
         """
-        A function that closes the stream and pyaudio
+        A function that closes the stream and pyaudio, if a stream was created
         """
-        self.close()
-        self.pa_obj.terminate()
+        try:
+            # Try terminating the audio stream
+            self.close()
+            self.pa_obj.terminate()
+        except Exception as e:
+            # Audio stream was not created
+            print(f"Did not terminate, because stream wasn't created anyway\nError: {e}")
 
     def get_current_audio(self):
         """
@@ -39,6 +44,8 @@ class AudioStream:
         :return: audio frames
         :rtype: bytes
         """
-        frames = self.input_stream.get_read_available()
-        input_data = self.input_stream.read(frames)
+        frames = self.input_stream.get_read_available()  # retrieves the number of frames (audio samples grouped
+        # together) currently available in the stream's buffer
+        input_data = self.input_stream.read(frames)  # reads the specified number of frames (frames) from the
+        # PyAudio stream
         return input_data

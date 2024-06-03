@@ -11,12 +11,19 @@ import PopupService
 
 
 def stringify_number(num):
+    """
+    A function that takes a number and returns it as a shorter string
+    :param num: The number to make shorter
+    :type num: int
+    :return: The short number
+    :rtype: str
+    """
     if num < 1000:
         return str(num)
     elif 1000 < num < 1000000:
-        return str(num / 1000) + 'K'
+        return str(round(num / 1000)) + 'K'
     else:
-        return str(num / 1000000) + 'M'
+        return str(round(num / 1000000)) + 'M'
 
 
 class VideoSelectionForm:
@@ -60,19 +67,26 @@ class VideoSelectionForm:
         self.hide()
 
     def update_tiles(self):
-        print(self.video_list)
+        """
+        A function that updates the update of the stream tiles on the screen
+        """
         video_index = self.current_page * 9  # set as the first video
         for frame in self.video_frames:
-            if video_index < len(self.video_list):
+            if video_index < len(self.video_list):  # for case where the page isn't full
                 frame[0].show()
                 frame[1].show()
-                frame[1].set_text(f"\n  {self.video_list[video_index][0]}\n     Creator: {self.video_list[video_index][1]}\n     Views: {self.video_list[video_index][2]}\n     Likes: {self.video_list[video_index][4]}  Dislikes: {self.video_list[video_index][5]}")
+                frame[1].set_text(f"\n  {self.video_list[video_index][0][:16]}\n"
+                                  f"     Creator: {self.video_list[video_index][1]}\n"
+                                  f"     Views: {stringify_number(self.video_list[video_index][2])}\n"
+                                  f"     Likes: {stringify_number(self.video_list[video_index][4])}"
+                                  f"  Dislikes: {stringify_number(self.video_list[video_index][5])}")
             else:
+                # frame not used
                 frame[0].hide()
                 frame[1].hide()
             video_index += 1
         last_page = math.ceil(len(self.video_list) / 9) - 1
-        print(f"current page: {self.current_page}   last page: {last_page}")
+        # Show and hide next and previous buttons
         if self.current_page > 0:
             self.previous_button.show()
         else:
@@ -83,6 +97,9 @@ class VideoSelectionForm:
             self.next_button.hide()
 
     def search(self):
+        """
+        A function that send a search request to the server and updates the screen accordingly
+        """
         keyword = self.search_bar.getText()
         message = {"type": "search", "keyword": keyword}
         Communication.send_message_aes(self.server_socket, message, self.aes_cypher)
@@ -92,8 +109,19 @@ class VideoSelectionForm:
         self.update_tiles()
 
     def watch_video(self, button_index, switch_to_player_callback, set_video_callback, start_video_watch_callback):
-        selected_video = self.video_list[self.current_page * 9 + button_index]
-        message = {"type": "watch", "vid": selected_video[3]}
+        """
+        A function called when the user wants to watch a video
+        :param button_index: Index of the tile the user presses (from 1 to 9)
+        :type button_index: int
+        :param switch_to_player_callback: A function that switches to the player form
+        :type switch_to_player_callback: Callback
+        :param set_video_callback: A function that sets the video data on the player form
+        :type set_video_callback: callback
+        :param start_video_watch_callback: A function that starts plays the stream data from the server
+        :type start_video_watch_callback: callback
+        """
+        selected_video = self.video_list[self.current_page * 9 + button_index]  # get video index
+        message = {"type": "watch", "vid": selected_video[3]}  # send watch request to server
         Communication.send_message_aes(self.server_socket, message, self.aes_cypher)
         response = Communication.recv_message_aes(self.server_socket, self.aes_cypher)
         if response["status"]:
@@ -105,14 +133,23 @@ class VideoSelectionForm:
             PopupService.error_popup("Error while trying to connect to stream", response["text"])
 
     def next(self):
+        """
+        A function that moves to the next results page
+        """
         self.current_page += 1
         self.update_tiles()
 
     def previous(self):
+        """
+        A function that moves to the previous results page
+        """
         self.current_page -= 1
         self.update_tiles()
 
     def show(self):
+        """
+        Show all parts of the form
+        """
         self.search()
         self.update_tiles()
         self.search_bar.show()
@@ -120,6 +157,9 @@ class VideoSelectionForm:
         self.back_button.show()
 
     def hide(self):
+        """
+        hide all parts of the form
+        """
         for frame in self.video_frames:
             frame[0].hide()
             frame[1].hide()
@@ -130,12 +170,33 @@ class VideoSelectionForm:
         self.back_button.hide()
 
     def get_size(self):
+        """
+        Get size of the form window
+        :return: size of the screen
+        :rtype: tuple
+        """
         return self.size_x, self.size_y
 
     def get_title(self):
+        """
+        Get the title of the Form
+        :return: Form title
+        :rtype: string
+        """
         return self.title
 
     def button_event_innit(self, return_to_menu_callback, switch_to_player_callback, set_video_callback, start_video_watch_callback):
+        """
+        A function that sets the events for all the buttons in the form
+        :param return_to_menu_callback: A function that switches to the main menu form
+        :type return_to_menu_callback: callback
+        :param switch_to_player_callback: A function that switches to the player form
+        :type switch_to_player_callback: callback
+        :param set_video_callback: A function that sets the video data on the player form
+        :type set_video_callback: callback
+        :param start_video_watch_callback: A function that starts playing the stream
+        :type start_video_watch_callback: callback
+        """
         # written like that so the functions won't be called on definition
         self.search_button.setOnClick(lambda func=self.search: func())
         self.next_button.setOnClick(lambda func=self.next: func())

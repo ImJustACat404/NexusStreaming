@@ -33,7 +33,7 @@ Message Types:
     type = "close"
 
     reaction -
-    type="reaction", reaction = str (like, unlike, remove)
+    type="reaction", reaction = str (like, dislike, remove)
 
     rsa key -
     type="rsa_key", key = rsa key

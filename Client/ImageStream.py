@@ -5,11 +5,20 @@ import pyautogui
 import numpy as np
 
 
-DEFAULT_RES = (427, 240)
+DEFAULT_RES = (427, 240)  # Default resolution to be captured
 BORDER_COLOR = (0, 0, 0)
 
 
 def adjust_frame(frame, ratio):
+    """
+    A function that adjust stream frames to the default size, by adding black bars on the sides
+    :param frame: A frame to be adjusted
+    :type frame: Frame
+    :param ratio: Current aspect ratio
+    :type ratio: tuple
+    :return: The frame in the correct size
+    :rtype: Frame
+    """
     if round(ratio, 2) == round(16 / 9, 2):
         frame = cv2.resize(frame, DEFAULT_RES)
     elif ratio < (16 / 9):

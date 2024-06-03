@@ -17,21 +17,44 @@ class WatcherOrStreamerForm:
         self.hide()
 
     def show(self):
+        """
+        Show all parts of the form
+        """
         self.new_stream_button.show()
         self.watch_button.show()
         self.title_image.show()
 
     def hide(self):
+        """
+        Hide all parts of the form
+        """
         self.new_stream_button.hide()
         self.watch_button.hide()
         self.title_image.hide()
 
     def get_size(self):
+        """
+        Get size of the form window
+        :return: size of the screen
+        :rtype: tuple
+        """
         return self.size_x, self.size_y
 
     def get_title(self):
+        """
+        Get the title of the Form
+        :return: Form title
+        :rtype: string
+        """
         return self.title
 
     def button_event_innit(self, watch_callback, stream_callback):
+        """
+        A function that sets the events for all the buttons in the form
+        :param watch_callback: A function that switches to the video selection form
+        :type watch_callback: callback
+        :param stream_callback: A function that switches to the stream creation form
+        :type stream_callback: callback
+        """
         self.new_stream_button.setOnClick(stream_callback)
         self.watch_button.setOnClick(watch_callback)

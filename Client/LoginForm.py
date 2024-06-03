@@ -65,6 +65,9 @@ class LogInForm:
         self.hide()
 
     def show(self):
+        """
+        Show all parts of the form
+        """
         self.title_image.show()
         self.email_label.show()
         self.email_textbox.show()
@@ -75,6 +78,9 @@ class LogInForm:
         self.error_label.show()
 
     def hide(self):
+        """
+        hide all parts of the form
+        """
         self.title_image.hide()
         self.email_label.hide()
         self.email_textbox.hide()
@@ -85,12 +91,27 @@ class LogInForm:
         self.error_label.hide()
 
     def get_size(self):
+        """
+        Get size of the form window
+        :return: size of the screen
+        :rtype: tuple
+        """
         return self.size_x, self.size_y
 
     def get_title(self):
+        """
+        Get the title of the Form
+        :return: Form title
+        :rtype: string
+        """
         return self.title
 
     def _login_request(self, successful_connection_callback):
+        """
+        Send a login request to the server
+        :param successful_connection_callback: A function to be called when connection is successful
+        :type successful_connection_callback: callback
+        """
         message = {"type": "login", "email": self.email_textbox.getText(), "password": self.password_textbox_value}
         Communication.send_message_aes(self.server_socket, message, self.aes_cypher)
         response = Communication.recv_message_aes(self.server_socket, self.aes_cypher)
@@ -102,5 +123,12 @@ class LogInForm:
             self.error_label.set_text(response["text"])
 
     def button_event_innit(self, new_user_callback, successful_connection_callback):
+        """
+        A function that sets the events for all the buttons in the form
+        :param new_user_callback: A function to be called to switch to signup screen
+        :type new_user_callback: Callback
+        :param successful_connection_callback: A function to be called when connection is successful
+        :type successful_connection_callback: Callback
+        """
         self.new_user_button.setOnClick(new_user_callback)
         self.login_button.setOnClick(lambda: self._login_request(successful_connection_callback))

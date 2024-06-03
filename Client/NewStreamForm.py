@@ -31,6 +31,9 @@ class NewStreamForm:
         self.hide()
 
     def show(self):
+        """
+        Show all form components
+        """
         self.window_title.show()
         self.title_label.show()
         self.title_textbox.show()
@@ -40,6 +43,9 @@ class NewStreamForm:
         self.back_button.show()
 
     def hide(self):
+        """
+        Hide all form components
+        """
         self.window_title.hide()
         self.title_label.hide()
         self.title_textbox.hide()
@@ -51,12 +57,27 @@ class NewStreamForm:
         self.closing_message.hide()
 
     def get_size(self):
+        """
+        Get size of the form window
+        :return: size of the screen
+        :rtype: tuple
+        """
         return self.size_x, self.size_y
 
     def get_title(self):
+        """
+        Get the title of the Form
+        :return: Form title
+        :rtype: string
+        """
         return self.title
 
     def start_button_press(self, stream_start_callback):
+        """
+        A function to be called when the start button is pressed
+        :param stream_start_callback: A function that starts the stream
+        :type stream_start_callback: Callback
+        """
         self.start_button.hide()
         self.back_button.hide()
         message = {"type": "broadcast", "title": self.title_textbox.getText()}
@@ -65,11 +86,25 @@ class NewStreamForm:
         self.stop_button.show()
 
     def stop_button_press(self, stream_stop_event):
+        """
+        A function called when the stop button is pressed
+        :param stream_stop_event: A function that stops a running event
+        :type stream_stop_event: Callback
+        """
         self.stop_button.hide()
         self.closing_message.show()
         pygame.event.post(pygame.event.Event(stream_stop_event))
 
     def button_event_innit(self, return_to_menu_callback, stream_start_callback, stream_stop_event):
+        """
+        A function that sets the events for all the buttons in the form
+        :param return_to_menu_callback: A function to be called to return to the main menu
+        :type return_to_menu_callback: Callback
+        :param stream_start_callback: A function to be called to start a stream
+        :type stream_start_callback: Callback
+        :param stream_stop_event: A PyGame event to be called to stop the stream
+        :type stream_stop_event: PyGame event
+        """
         self.stop_button.setOnClick(lambda func=self.stop_button_press: func(stream_stop_event))
         self.start_button.setOnClick(lambda func=self.start_button_press: func(stream_start_callback))
         self.back_button.setOnClick(return_to_menu_callback)

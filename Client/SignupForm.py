@@ -8,6 +8,10 @@ from UIConst import *
 
 
 def _password_edit(self):
+    """
+    A function that changes the values of the password input box according to input. called every edit.
+    Outside the class because of a bug that prevents textbox events to be set after creation in PyGame widgets
+    """
     # outside because of a bug in pygame widgets
     current_value = self.password_textbox.getText()
     if len(current_value) > len(self.password_textbox_value):
@@ -50,6 +54,9 @@ class SignUpForm:
         self.hide()
 
     def show(self):
+        """
+        Show all parts of the form
+        """
         self.title_image.show()
         self.email_label.show()
         self.email_textbox.show()
@@ -62,6 +69,9 @@ class SignUpForm:
         self.error_label.show()
 
     def hide(self):
+        """
+        hide all parts of the form
+        """
         self.title_image.hide()
         self.email_label.hide()
         self.email_textbox.hide()
@@ -74,17 +84,26 @@ class SignUpForm:
         self.error_label.hide()
 
     def get_size(self):
+        """
+        Get size of the form window
+        :return: size of the screen
+        :rtype: tuple
+        """
         return self.size_x, self.size_y
 
     def get_title(self):
+        """
+        Get the title of the Form
+        :return: Form title
+        :rtype: string
+        """
         return self.title
 
     def _signup_request(self, successful_connection_callback):
         """
-
-        :param successful_connection_event:
-        :type successful_connection_event: callback
-        :return:
+        A function that sends a  signup request to the server
+        :param successful_connection_callback: A function to be called on a successful signup
+        :type successful_connection_callback: Callback
         """
         # type="signup",  email=string, password=string, uname=string
         message = {"type": "signup", "email": self.email_textbox.getText(), "uname": self.uname_textbox.getText(),
@@ -99,5 +118,12 @@ class SignUpForm:
             self.error_label.set_text(response["text"])
 
     def button_event_innit(self, already_user_callback, successful_connection_callback):
+        """
+        A function that sets the events for all the buttons in the form
+        :param already_user_callback: A function that switches to the login screen
+        :type already_user_callback: callback
+        :param successful_connection_callback: A function to be called in case of a successful signup
+        :type successful_connection_callback: callback
+        """
         self.already_user_button.setOnClick(already_user_callback)
         self.sign_up_button.setOnClick(lambda: self._signup_request(successful_connection_callback))

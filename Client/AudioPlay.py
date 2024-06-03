@@ -28,10 +28,15 @@ class AudioStream:
 
     def terminate(self):
         """
-        A function that closes the stream and pyaudio
+        A function that closes the stream and pyaudio, if a stream was created
         """
-        self.close()
-        self.pa_obj.terminate()
+        try:
+            # Try terminating the audio stream
+            self.close()
+            self.pa_obj.terminate()
+        except Exception as e:
+            # Audio stream was not created
+            print(f"Did not terminate, because stream wasn't created anyway\nError: {e}")
 
     def play_audio(self, audio_bytes):
         """
