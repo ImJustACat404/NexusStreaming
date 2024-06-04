@@ -278,6 +278,7 @@ def connect(client_socket, aes_cypher):
         Communication.send_message_aes(client_socket, message, aes_cypher)
         if successful and request["type"] == "signup":
             code = str(random.randint(100000, 999999))
+            print(code)
             EmailService.send_verification_code(request["email"], code)
             client_code_verification = Communication.recv_message_aes(client_socket, aes_cypher)
             if client_code_verification["type"] == "code" and client_code_verification["code"] == code:

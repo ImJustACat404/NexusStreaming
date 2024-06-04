@@ -57,7 +57,7 @@ def stream_summery(recipient_email, recipient_name, stream_name, max_views, like
     email_body = (f"Thank you for using Nexus {recipient_name}!\n"
                   f"This is the summary of your stream \"{stream_name}\":\n\n"
                   f"You reached a maximum of {max_views} viewers! Amazing!\n"
-                  f"{likes} people likes what you were doing!\n"
+                  f"{likes} people liked what you were doing!\n"
                   f"{dislikes} people think you can do better, don't take it too hard!\n\n"
                   f"Hope to see you again,\nThe Nexus team")
     send_mail(recipient_email, email_subject, email_body)

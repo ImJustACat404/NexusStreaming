@@ -105,6 +105,8 @@ class SignUpForm:
         :param successful_connection_callback: A function to be called on a successful signup
         :type successful_connection_callback: Callback
         """
+        # Reset error label
+        self.error_label.set_text("")
         # type="signup",  email=string, password=string, uname=string
         message = {"type": "signup", "email": self.email_textbox.getText(), "uname": self.uname_textbox.getText(),
                    "password": self.password_textbox_value}

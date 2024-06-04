@@ -23,7 +23,7 @@ pygame.init()
 
 
 # Communication constants
-SERVER_IP = "127.0.0.1"
+SERVER_IP = "157.90.143.107"
 SERVER_PORT = 8001
 
 # Form globals
@@ -265,7 +265,7 @@ def main():
         
         print("Done!")
         start_ui(server_socket, aes_cypher)
-    except ConnectionRefusedError:
+    except (ConnectionRefusedError, WindowsError):
         # Server down
         PopupService.error_popup("Could nor connect to server", "Could not connect to server, please try again later")
     except Exception as error:

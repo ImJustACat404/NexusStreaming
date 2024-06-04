@@ -112,6 +112,9 @@ class LogInForm:
         :param successful_connection_callback: A function to be called when connection is successful
         :type successful_connection_callback: callback
         """
+        # Reset error label
+        self.error_label.set_text("")
+        # Send request
         message = {"type": "login", "email": self.email_textbox.getText(), "password": self.password_textbox_value}
         Communication.send_message_aes(self.server_socket, message, self.aes_cypher)
         response = Communication.recv_message_aes(self.server_socket, self.aes_cypher)
