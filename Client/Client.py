@@ -23,7 +23,7 @@ pygame.init()
 
 
 # Communication constants
-SERVER_IP = "157.90.143.107"
+SERVER_IP = "127.0.0.1"
 SERVER_PORT = 8001
 
 # Form globals

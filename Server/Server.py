@@ -298,14 +298,16 @@ def connect(client_socket, aes_cypher):
     new_user(CONNECTED_USERS[client_socket])
 
 
-def establish_secure_connection(client_socket):
+def establish_secure_connection(client_socket, rsa_keys):
     """
     Agree on AES key in a secure way, with RSA encryption
     :param client_socket: The client's socket
     :type client_socket: socket.socket
+    :param rsa_keys: Rsa keys (private_key, public_key) used to exchange aes keys securely
+    :type rsa_keys: tuple
     """
     try:
-        private_key, public_key = Communication.generate_rsa_keys()
+        private_key, public_key = rsa_keys
         message = {"type": "rsa_key", "key": public_key}
         Communication.send_message_unsecure(client_socket, message)
         rsa_cypher = PKCS1_OAEP.new(RSA.importKey(private_key))
@@ -325,6 +327,8 @@ def main():
     The main function. Accepts connections from new clients.
     :return:
     """
+    # generate rsa keys
+    rsa_keys = Communication.generate_rsa_keys()  # private_key, public_key
     # Connect to clients
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     server_socket.bind(('0.0.0.0', PORT))  # Bind to a specific address and port
@@ -332,7 +336,7 @@ def main():
     while True:
         client_socket, client_address = server_socket.accept()
         print(f"Connected to client {client_address}")
-        threading.Thread(target=establish_secure_connection, args=(client_socket,)).start()
+        threading.Thread(target=establish_secure_connection, args=(client_socket, rsa_keys)).start()
 
 
 if __name__ == "__main__":
