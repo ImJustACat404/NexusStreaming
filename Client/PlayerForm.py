@@ -24,8 +24,10 @@ def stringify_number(num):
 
 class PlayerForm:
     def __init__(self, server_socket, aes_cypher):
+        # For communication
         self.server_socket = server_socket
         self.aes_cypher = aes_cypher
+
         self.title = "Video Player"
         self.size_x = 800
         self.size_y = 600
@@ -71,6 +73,7 @@ class PlayerForm:
         self.video_title_label.show()
         self.views_label.show()
         self.image.show()
+        self.image.set_image(EMPTY_SCREEN_BYTES)
         self.close_button.show()
         self.show_reactions()
 

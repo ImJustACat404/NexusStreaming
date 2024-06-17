@@ -193,6 +193,8 @@ def new_user(user):
                 else:
                     message = {"type": "status", "status": False, "text": "Video not found!"}
                     user.send_message(message)
+            else:
+                pass  # may be a like or dislike sent while the stream was closing, the server will ignore the request
         # either watcher or streamer
         if request["type"] == "broadcast":
             new_broadcaster(user, request)
