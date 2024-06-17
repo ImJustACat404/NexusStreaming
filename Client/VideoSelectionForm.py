@@ -34,9 +34,29 @@ class VideoSelectionForm:
         self.size_x = 800
         self.size_y = 600
         self.win = pygame.display.set_mode((self.size_x, self.size_y))
-        self.search_bar = TextBox(self.win, 5, 5, 700, 50, borderColour=BLUE, radius=10, fontSize=30)
+        self.search_bar = TextBox(
+            self.win,
+            5,
+            5,
+            700,
+            50,
+            borderColour=BLUE,
+            radius=10,
+            fontSize=30
+        )
         unscaled_search_icon = pygame.image.load(SEARCH_ICON)
-        self.search_button = Button(self.win, 710, 5, 85, 50, colour=BLUE, radius=10, hoverColour=DARK_BLUE, pressedColour=DARKER_BLUE, image=pygame.transform.scale(unscaled_search_icon, (30, 30)))
+        self.search_button = Button(
+            self.win,
+            710,
+            5,
+            85,
+            50,
+            colour=BLUE,
+            radius=10,
+            hoverColour=DARK_BLUE,
+            pressedColour=DARKER_BLUE,
+            image=pygame.transform.scale(unscaled_search_icon, (30, 30))
+        )
         video1 = Button(self.win, 15, 80, 250, 140, radius=15, colour=LIGHT_BLUE)
         text1 = Label(self.win, "", (video1.getX() + 5, video1.getY() + 5), DEFAULT_FONT_SMALL, WHITE)
         video2 = Button(self.win, 275, 80, 250, 140, radius=15, colour=LIGHT_BLUE)
@@ -55,13 +75,47 @@ class VideoSelectionForm:
         text8 = Label(self.win, "", (video8.getX() + 5, video8.getY() + 5), DEFAULT_FONT_SMALL, WHITE)
         video9 = Button(self.win, 535, 380, 250, 140, radius=15, colour=LIGHT_BLUE)
         text9 = Label(self.win, "", (video9.getX() + 5, video9.getY() + 5), DEFAULT_FONT_SMALL, WHITE)
-        self.video_frames = [(video1, text1), (video2, text2), (video3, text3), (video4, text4), (video5, text5), (video6, text6), (video7, text7), (video8, text8), (video9, text9)]
+        self.video_frames = [(video1, text1), (video2, text2), (video3, text3), (video4, text4), (video5, text5),
+                             (video6, text6), (video7, text7), (video8, text8), (video9, text9)]
         unscaled_next_icon = pygame.image.load(NEXT_ICON)
-        self.next_button = Button(self.win, 430, 540, 80, 40, image=pygame.transform.scale(unscaled_next_icon, (30, 30)), colour=BLUE, radius=10, hoverColour=DARK_BLUE, pressedColour=DARKER_BLUE)
+        self.next_button = Button(
+            self.win,
+            430,
+            540,
+            80,
+            40,
+            image=pygame.transform.scale(unscaled_next_icon, (30, 30)),
+            colour=BLUE,
+            radius=10,
+            hoverColour=DARK_BLUE,
+            pressedColour=DARKER_BLUE
+        )
         unscaled_prev_icon = pygame.image.load(PREV_ICON)
-        self.previous_button = Button(self.win, 290, 540, 80, 40, image=pygame.transform.scale(unscaled_prev_icon, (30, 30)), colour=BLUE, radius=10, hoverColour=DARK_BLUE, pressedColour=DARKER_BLUE)
+        self.previous_button = Button(
+            self.win,
+            290,
+            540,
+            80,
+            40,
+            image=pygame.transform.scale(unscaled_prev_icon, (30, 30)),
+            colour=BLUE,
+            radius=10,
+            hoverColour=DARK_BLUE,
+            pressedColour=DARKER_BLUE
+        )
         unscaled_back_icon = pygame.image.load(BACK_ICON)
-        self.back_button = Button(self.win, 20, 540, 80, 40, image=pygame.transform.scale(unscaled_back_icon, (30, 30)), colour=BLUE, radius=10, hoverColour=DARK_BLUE, pressedColour=DARKER_BLUE)
+        self.back_button = Button(
+            self.win,
+            20,
+            540,
+            80,
+            40,
+            image=pygame.transform.scale(unscaled_back_icon, (30, 30)),
+            colour=BLUE,
+            radius=10,
+            hoverColour=DARK_BLUE,
+            pressedColour=DARKER_BLUE
+        )
         self.video_list = []
         self.current_page = 0
         self.hide()
@@ -204,5 +258,6 @@ class VideoSelectionForm:
         self.back_button.setOnClick(return_to_menu_callback)
         index = 0
         for frame in self.video_frames:
-            frame[0].setOnClick(lambda i=index: self.watch_video(i, switch_to_player_callback, set_video_callback, start_video_watch_callback))
+            frame[0].setOnClick(lambda i=index: self.watch_video(i, switch_to_player_callback, set_video_callback,
+                                                                 start_video_watch_callback))
             index += 1

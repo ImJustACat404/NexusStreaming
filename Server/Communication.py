@@ -2,10 +2,9 @@ __author__ = "Ido Senn"
 
 import socket
 import msgpack
-from Crypto.PublicKey import RSA
-from Crypto.Cipher import PKCS1_OAEP
 import AESEncrypt
 from AESEncrypt import AESCypher
+import RsaService
 
 LEN_LEN = 8  # Length of length buffer
 
@@ -32,18 +31,6 @@ def _recvall(sock, size):
     return data
 
 
-def generate_rsa_keys():
-    """
-    A function that generates a pair of random RSA public and private keys
-    :return: A tuple with the private and public RSA keys (prv, pub)
-    :rtype: tuple
-    """
-    key = RSA.generate(2048)  # generate a pair of keys
-    public_key = key.public_key().export_key('PEM')
-    private_key = key.export_key()
-    return private_key, public_key
-
-
 def send_message_unsecure(sock, message):
     """
     Sand an unencrypted message
@@ -52,7 +39,7 @@ def send_message_unsecure(sock, message):
     :param message: A message to send
     :type message: dict
     """
-    print("[--->]" + str(message)[:100])
+    # print("[--->]" + str(message)[:100])
     packed_message = msgpack.packb(message)  # serialize dictionary
     sock.sendall(str(len(packed_message)).zfill(LEN_LEN).encode() + packed_message)  # send data with length
 
@@ -67,41 +54,41 @@ def recv_message_unsecure(sock):
     """
     message_length = int(sock.recv(LEN_LEN).decode())
     message = msgpack.unpackb(_recvall(sock, message_length))  # deserialize dictionary
-    print("[<---]" + str(message)[:100])
+    # print("[<---]" + str(message)[:100])
     return message
 
 
-def send_message_rsa(sock, message, cypher):
+def send_message_rsa(sock, message, public_key):
     """
     Send a message encrypted with RSA
     :param sock: A socket to send the message to
     :type sock: socket.socket
     :param message: A message to send
     :type message: dict
-    :param cypher: An object used to encrypt data with RSA
-    :type cypher: Crypto.Cipher.PKCS1_OAEP.PKCS1OAEP_Cipher
+    :param public_key: the public RSA key used for encryption
+    :type public_key: public RSA key
     """
-    print("[--->]" + str(message)[:100])
+    # print("[--->]" + str(message)[:100])
     packed_message = msgpack.packb(message)  # serialize dictionary
-    encrypted_message = cypher.encrypt(packed_message)  # Encrypt data with RSA
+    encrypted_message = RsaService.rsa_encrypt(packed_message, public_key)  # Encrypt data with RSA
     sock.sendall(str(len(encrypted_message)).zfill(LEN_LEN).encode() + encrypted_message)  # send data with length
 
 
-def recv_message_rsa(sock, cypher):
+def recv_message_rsa(sock, private_key):
     """
     Receive a message encrypted with RSA
     :param sock: A socket to receive a message from
     :type sock: socket.socket
-    :param cypher: An object used to decrypt messages with RSA
-    :type cypher: Crypto.Cipher.PKCS1_OAEP.PKCS1OAEP_Cipher
+    :param private_key: The private RSA key, used for decryption
+    :type private_key: private RSA key
     :return: A message
     :rtype: dict
     """
     message_length = int(sock.recv(LEN_LEN).decode())
     encrypted_message = _recvall(sock, message_length)
-    packed_message = cypher.decrypt(encrypted_message)  # decrypt data with RSA
+    packed_message = RsaService.rsa_decrypt(encrypted_message, private_key)  # decrypt data with RSA
     message = msgpack.unpackb(packed_message)  # deserialize dictionary
-    print("[<---]" + str(message)[:100])
+    # print("[<---]" + str(message)[:100])
     return message
 
 
@@ -115,7 +102,7 @@ def send_message_aes(sock, message, cypher):
     :param cypher: An object used to encrypt and decrypt data using AES
     :type cypher: AESCypher
     """
-    print("[--->]" + str(message)[:100])
+    # print("[--->]" + str(message)[:100])
     packed_message = msgpack.packb(message)  # serialize dictionary
     encrypted_message = cypher.aes_encrypt(packed_message)  # Encrypt data with aes
     sock.sendall(str(len(encrypted_message)).zfill(LEN_LEN).encode() + encrypted_message)  # send data with length
@@ -135,5 +122,5 @@ def recv_message_aes(sock, cypher):
     encrypted_message = _recvall(sock, message_length)
     packed_message = cypher.aes_decrypt(encrypted_message)  # Decrypt data with AES
     message = msgpack.unpackb(packed_message)  # deserialize dictionary
-    print("[<---]" + str(message)[:100])
+    # print("[<---]" + str(message)[:100])
     return message

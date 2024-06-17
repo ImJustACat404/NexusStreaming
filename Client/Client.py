@@ -16,8 +16,6 @@ import AudioRecord
 import AudioPlay
 import AESEncrypt
 from AESEncrypt import AESCypher
-from Crypto.Cipher import PKCS1_OAEP
-from Crypto.PublicKey import RSA
 import PopupService
 pygame.init()
 
@@ -27,7 +25,7 @@ SERVER_IP = "127.0.0.1"
 SERVER_PORT = 8001
 
 # Form globals
-FIRST_FORM = "login"
+FIRST_FORM = "login"  # This is the first form to be displayed when starting Nexus
 WINDOW_FORMS = {}
 STREAM_OPEN = False
 SOFTWARE_CLOSED = False
@@ -91,7 +89,7 @@ def video_send_stream(server_socket, aes_cypher, is_screen):
             # socket was closed
             audio_stream.terminate()
         except Exception as e:
-            # Hardware error, lost access while in stream
+            # Hardware error, lost access to camera or mic while in stream
             print(f"Could not access hardware! Error: {e}")
             Communication.send_message_aes(server_socket, {"type": "close"}, aes_cypher)  # notify server
             if audio_stream is not None:  # close audio stream if there is one
@@ -106,7 +104,7 @@ def video_send_stream(server_socket, aes_cypher, is_screen):
         # Hardware error, lost access before connecting to stream
         print(f"Could not access hardware! Error: {e}")
         Communication.send_message_aes(server_socket, {"type": "close"}, aes_cypher)
-        pygame.event.post(pygame.event.Event(STREAM_CLOSE_EVENT_SEND)) # call send stream close event (changes screens)
+        pygame.event.post(pygame.event.Event(STREAM_CLOSE_EVENT_SEND))  # call send stream close event (changes screens)
         STREAM_OPEN = True  # Set program to stream mode to deal with socket - emptying mechanism
         if audio_stream is not None:  # close audio stream if there is one
             audio_stream.terminate()
@@ -125,10 +123,11 @@ def video_play_stream(server_socket, aes_cypher):
     :type aes_cypher: AESCypher
     """
     global STREAM_OPEN
+    audio_stream = None
     try:
         audio_stream = AudioPlay.AudioStream()
     except Exception as e:
-        # no audio output device
+        # no audio output device connected
         print(f"Could not access hardware! Error: {e}")
         message = {"type": "close"}  # notify server
         Communication.send_message_aes(server_socket, message, aes_cypher)
@@ -158,7 +157,7 @@ def video_play_stream(server_socket, aes_cypher):
                     message = Communication.recv_message_aes(server_socket, aes_cypher)
                 STREAM_OPEN = False  # close stream
         elif message["type"] == "frame":
-            # data is image
+            # data is an image
             WINDOW_FORMS["player"].set_frame(message["data"])  # send to UI
     audio_stream.terminate()  # close audio stream
     pygame.event.post(pygame.event.Event(STREAM_CLOSE_EVENT_PLAY))  # call stream playing close event (change window)
@@ -254,13 +253,11 @@ def main():
         print("Connected!")
         print("Establishing secure connection . . .")
         message = Communication.recv_message_unsecure(server_socket)
-        public_rsa_key = RSA.importKey(message["key"])
+        public_rsa_key = message["key"]
         aes_key = AESEncrypt.generate_key()
         aes_iv = AESEncrypt.generate_iv()
-        rsa_cypher = PKCS1_OAEP.new(public_rsa_key)
-        print(type(rsa_cypher))
         message = {"type": "aes_key", "key": aes_key, "iv": aes_iv}
-        Communication.send_message_rsa(server_socket, message, rsa_cypher)
+        Communication.send_message_rsa(server_socket, message, public_rsa_key)
         aes_cypher = AESCypher(aes_iv, aes_key)
         
         print("Done!")

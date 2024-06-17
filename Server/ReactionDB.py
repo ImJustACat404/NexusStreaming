@@ -16,7 +16,7 @@ def remove_reaction(vid, user_mail):
     :param user_mail: The client's email address
     :type user_mail: str
     """
-    print("[-W-] Reaction DB Access")
+    # print("[-W-] Reaction DB Access")
     with DB_LOCK:
         database = sqlite3.connect(DATABASE_LOCATION)
         db_cursor = database.cursor()
@@ -37,7 +37,7 @@ def add_reaction(vid, user_mail, reaction):
     :param reaction: The reaction to add (1 - like, -1 - dislike)
     :type reaction: int
     """
-    print("[-W-] Reaction DB Access")
+    # print("[-W-] Reaction DB Access")
     # remove current reaction
     remove_reaction(vid, user_mail)
     with DB_LOCK:
@@ -56,7 +56,7 @@ def remove_all_reactions_user(user_mail):
     :param user_mail: The client's email address
     :type user_mail: str
     """
-    print("[-W-] Reaction DB Access")
+    # print("[-W-] Reaction DB Access")
     with DB_LOCK:
         database = sqlite3.connect(DATABASE_LOCATION)
         db_cursor = database.cursor()
@@ -73,7 +73,7 @@ def remove_all_reactions_video(vid):
     :param vid: Video ID of the stream
     :type vid: int
     """
-    print("[-W-] Reaction DB Access")
+    # print("[-W-] Reaction DB Access")
     with DB_LOCK:
         database = sqlite3.connect(DATABASE_LOCATION)
         db_cursor = database.cursor()
@@ -94,7 +94,7 @@ def get_reaction(vid, user_mail):
     :return: The client's reaction
     :rtype: int
     """
-    print("[-R-] Reaction DB Access")
+    # print("[-R-] Reaction DB Access")
     with DB_LOCK:
         database = sqlite3.connect(DATABASE_LOCATION)
         db_cursor = database.cursor()
@@ -116,7 +116,7 @@ def how_many_likes(vid):
     :type vid: int
     :return: A list of the stream's reactions
     """
-    print("[-R-] Reaction DB Access")
+    # print("[-R-] Reaction DB Access")
     with DB_LOCK:
         database = sqlite3.connect(DATABASE_LOCATION)
         db_cursor = database.cursor()
@@ -135,7 +135,7 @@ def how_many_dislikes(vid):
     :type vid: int
     :return: A list of the stream's reactions
     """
-    print("[-R-] Reaction DB Access")
+    # print("[-R-] Reaction DB Access")
     with DB_LOCK:
         database = sqlite3.connect(DATABASE_LOCATION)
         db_cursor = database.cursor()

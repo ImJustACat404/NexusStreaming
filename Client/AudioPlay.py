@@ -16,8 +16,13 @@ class AudioStream:
         global FORMAT, CHANNELS, RATE, CHUNK
         # Create a PyAudio stream for output
         self.pa_obj = pyaudio.PyAudio()
-        self.output_stream = self.pa_obj.open(format=FORMAT, channels=CHANNELS, rate=RATE, output=True,
-                                              frames_per_buffer=CHUNK)
+        self.output_stream = self.pa_obj.open(
+            format=FORMAT,
+            channels=CHANNELS,
+            rate=RATE,
+            output=True,
+            frames_per_buffer=CHUNK
+        )
 
     def close(self):
         """
@@ -36,7 +41,7 @@ class AudioStream:
             self.pa_obj.terminate()
         except Exception as e:
             # Audio stream was not created
-            print(f"Did not terminate, because stream wasn't created anyway\nError: {e}")
+            print(f"Did not terminate, because stream wasn't created\nError: {e}")
 
     def play_audio(self, audio_bytes):
         """

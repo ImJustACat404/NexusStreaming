@@ -32,7 +32,7 @@ def is_email_in_system(user_email):
     :return: True if an email address is in the database, and False otherwise
     :rtype: bool
     """
-    print("[-R-] User DB Access")
+    # print("[-R-] User DB Access")
     with DB_LOCK:
         saved_users_db = sqlite3.connect(DATABASE_LOCATION)
         user_db_cursor = saved_users_db.cursor()
@@ -57,7 +57,7 @@ def add_user(uname, password, email):
     :param email: The client's email address
     :type email: str
     """
-    print("[-W-] User DB Access")
+    # print("[-W-] User DB Access")
     with DB_LOCK:
         saved_users_db = sqlite3.connect(DATABASE_LOCATION)
         user_db_cursor = saved_users_db.cursor()
@@ -80,7 +80,7 @@ def validate_password(input_password, user_email):
     :return: True if the password is correct, false otherwise
     :rtype: bool
     """
-    print("[-R-] User DB Access")
+    # print("[-R-] User DB Access")
     with DB_LOCK:
         saved_users_db = sqlite3.connect(DATABASE_LOCATION)
         user_db_cursor = saved_users_db.cursor()
@@ -105,7 +105,7 @@ def get_user_name(email):
     :return: The client's username
     :rtype: str
     """
-    print("[-R-] User DB Access")
+    # print("[-R-] User DB Access")
     with DB_LOCK:
         saved_users_db = sqlite3.connect(DATABASE_LOCATION)
         user_db_cursor = saved_users_db.cursor()

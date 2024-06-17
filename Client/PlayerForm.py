@@ -32,19 +32,102 @@ class PlayerForm:
         self.size_x = 800
         self.size_y = 600
         self.win = pygame.display.set_mode((self.size_x, self.size_y))
-        self.broadcaster_name_label = Label(self.win, "Broadcaster name", (50, 470), DEFAULT_FONT, BLACK)
-        self.video_title_label = Label(self.win, "Video Title", (50, 510), DEFAULT_FONT, BLACK)
-        self.views_label = Label(self.win, "Views: 0", (50, 550), DEFAULT_FONT, BLACK)
+        self.broadcaster_name_label = Label(
+            self.win,
+            "Broadcaster name",
+            (50, 510),
+            DEFAULT_FONT,
+            BLACK
+        )
+        self.video_title_label = Label(
+            self.win,
+            "Video Title",
+            (50, 470),
+            DEFAULT_FONT,
+            BLACK
+        )
+        self.views_label = Label(
+            self.win,
+            "Views: 0",
+            (50, 550),
+            DEFAULT_FONT,
+            BLACK
+        )
+        self.local_likes = 0  # local counter for likes and dislikes
+        self.local_dislikes = 0
         unscaled_like_icon = pygame.image.load(LIKE_ICON)
-        self.like_button = Button(self.win, 550, 450, 90, 40, text="0", textHAlign='right', textVAlign='centre',  image=pygame.transform.scale(unscaled_like_icon, (25, 25)), imageHAlign='left', radius=10)
+        self.like_button = Button(
+            self.win,
+            550,
+            450,
+            90,
+            40,
+            text="0",
+            textHAlign='right',
+            textVAlign='centre',
+            image=pygame.transform.scale(unscaled_like_icon, (25, 25)),
+            imageHAlign='left',
+            radius=10
+        )
         unscaled_dislike_icon = pygame.image.load(DISLIKE_ICON)
-        self.dislike_button = Button(self.win, 650, 450, 90, 40, text="0", textHAlign='right', textVAlign='centre',  image=pygame.transform.scale(unscaled_dislike_icon, (25, 25)), imageHAlign='left', radius=10)
+        self.dislike_button = Button(
+            self.win,
+            650,
+            450,
+            90,
+            40,
+            text="0",
+            textHAlign='right',
+            textVAlign='centre',
+            image=pygame.transform.scale(unscaled_dislike_icon, (25, 25)),
+            imageHAlign='left',
+            radius=10
+        )
         unscaled_unlike_icon = pygame.image.load(UNLIKE_ICON)
-        self.unlike_button = Button(self.win, 550, 450, 90, 40, text="0", textHAlign='right', textVAlign='centre', image=pygame.transform.scale(unscaled_unlike_icon, (25, 25)), imageHAlign='left', radius=10)
+        self.unlike_button = Button(
+            self.win,
+            550,
+            450,
+            90,
+            40,
+            text="0",
+            textHAlign='right',
+            textVAlign='centre',
+            image=pygame.transform.scale(unscaled_unlike_icon, (25, 25)),
+            imageHAlign='left',
+            radius=10
+        )
         unscaled_undislike_icon = pygame.image.load(UNDISLIKE_ICON)
-        self.undislike_button = Button(self.win, 650, 450, 90, 40, text="0", textHAlign='right', textVAlign='centre', image=pygame.transform.scale(unscaled_undislike_icon, (25, 25)), imageHAlign='left', radius=10)
-        self.image = Image(self.win, EMPTY_SCREEN_BYTES, 712, 400, (45, 30))
-        self.close_button = Button(self.win, 550, 500, 190, 80, text="Close", font=DEFAULT_FONT_BIG, radius=10)
+        self.undislike_button = Button(
+            self.win,
+            650,
+            450,
+            90,
+            40,
+            text="0",
+            textHAlign='right',
+            textVAlign='centre',
+            image=pygame.transform.scale(unscaled_undislike_icon, (25, 25)),
+            imageHAlign='left',
+            radius=10
+        )
+        self.image = Image(
+            self.win,
+            EMPTY_SCREEN_BYTES,
+            712,
+            400,
+            (45, 30)
+        )
+        self.close_button = Button(
+            self.win,
+            550,
+            500,
+            190,
+            80,
+            text="Close",
+            font=DEFAULT_FONT_BIG,
+            radius=10
+        )
         self.current_reaction = 0
         self.hide()
 
@@ -99,19 +182,31 @@ class PlayerForm:
         """
         video_name, creator, views, vid, likes, dislikes, current_reaction = video_data
         self.current_reaction = current_reaction
-        self.video_title_label.set_text(video_name[:16])
-        self.broadcaster_name_label.set_text(creator)
+        self.video_title_label.set_text(video_name[:20])
+        self.broadcaster_name_label.set_text("By: " + creator)
+        self.local_likes = likes
+        self.local_dislikes = dislikes
         self.like_button.setText(stringify_number(likes))
         self.unlike_button.setText(stringify_number(likes))
         self.dislike_button.setText(stringify_number(dislikes))
         self.undislike_button.setText(stringify_number(dislikes))
-        self.views_label.set_text(f"Views: {stringify_number(views)}")
+        self.views_label.set_text(f"Views: {stringify_number(views + 1)}")
 
     def like(self):
         """
         A function called when the like button is presses. changes widgets and sends data to server.
         """
+        if self.current_reaction == -1:  # remove one from dislike if pressed
+            # remove one dislike from button
+            self.local_dislikes = self.local_dislikes - 1
+            self.dislike_button.setText(str(self.local_dislikes))
+            self.undislike_button.setText(str(self.local_dislikes))
         self.current_reaction = 1  # set reaction to like
+        # add one like to button
+        self.local_likes = self.local_likes + 1
+        self.like_button.setText(str(self.local_likes))
+        self.unlike_button.setText(str(self.local_likes))
+
         self.like_button.hide()
         self.unlike_button.show()
         self.undislike_button.hide()
@@ -123,7 +218,17 @@ class PlayerForm:
         """
         A function called when the dislike button is presses. changes widgets and sends data to server.
         """
+        if self.current_reaction == 1:  # remove one from like if pressed
+            # remove one like from button
+            self.local_likes = self.local_likes - 1
+            self.like_button.setText(str(self.local_likes))
+            self.unlike_button.setText(str(self.local_likes))
         self.current_reaction = -1  # set reaction to dislike
+        # add one dislike to button
+        self.local_dislikes = self.local_dislikes + 1
+        self.dislike_button.setText(str(self.local_dislikes))
+        self.undislike_button.setText(str(self.local_dislikes))
+
         self.dislike_button.hide()
         self.undislike_button.show()
         self.unlike_button.hide()
@@ -136,6 +241,11 @@ class PlayerForm:
         A function called when the unlike button is presses. changes widgets and sends data to server.
         """
         self.current_reaction = 0  # changes reaction to no reaction
+        # remove one like from button
+        self.local_likes = self.local_likes - 1
+        self.like_button.setText(str(self.local_likes))
+        self.unlike_button.setText(str(self.local_likes))
+
         self.unlike_button.hide()
         self.like_button.show()
         message = {"type": "reaction", "reaction": "remove"}
@@ -146,6 +256,11 @@ class PlayerForm:
         A function called when the undislike button is presses. changes widgets and sends data to server.
         """
         self.current_reaction = 0  # Changes reaction to no reaction
+        # remove one dislike from button
+        self.local_dislikes = self.local_dislikes - 1
+        self.dislike_button.setText(str(self.local_dislikes))
+        self.undislike_button.setText(str(self.local_dislikes))
+
         self.undislike_button.hide()
         self.dislike_button.show()
         message = {"type": "reaction", "reaction": "remove"}
@@ -196,4 +311,3 @@ class PlayerForm:
         self.unlike_button.setOnClick(lambda func=self.unlike: func())
         self.undislike_button.setOnClick(lambda func=self.undislike: func())
         self.close_button.setOnClick(lambda func=self.close_stream: func(close_stream_event,))
-

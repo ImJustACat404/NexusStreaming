@@ -8,8 +8,7 @@ import socket
 import threading
 import ServerUser
 from ServerUser import User
-from Crypto.Cipher import PKCS1_OAEP
-from Crypto.PublicKey import RSA
+import RsaService
 from AESEncrypt import AESCypher
 import random
 import EmailService
@@ -45,7 +44,11 @@ def broadcast(creator, video_id):
     stream_open = True
     stream_name = VideoDB.get_video_data(video_id)[0]
     while stream_open:
-        read_users, write_users, error_users = ServerUser.user_select(CONNECTED_USERS, OPEN_STREAMS_USERS[video_id] + [creator.get_socket()], OPEN_STREAMS_USERS[video_id], [])
+        read_users, write_users, error_users = ServerUser.user_select(
+            CONNECTED_USERS,
+            OPEN_STREAMS_USERS[video_id] + [creator.get_socket()],
+            OPEN_STREAMS_USERS[video_id], []
+        )
         for read_user in read_users:
             if read_user is creator:
                 # A message from the creator
@@ -73,9 +76,10 @@ def broadcast(creator, video_id):
                     if read_user in read_users:
                         read_users.remove(read_user)
                     for write_user in write_users:  # Disconnect all watchers
-                        message = {"type": "close"}
-                        write_user.send_message(message)  # maybe some users won't be disconnected
-                        threading.Thread(target=new_user, args=(write_user,)).start()
+                        if write_user != creator:
+                            message = {"type": "close"}
+                            write_user.send_message(message)  # maybe some users won't be disconnected
+                            threading.Thread(target=new_user, args=(write_user,)).start()
                     close_user(creator)
                     stream_open = False
             else:
@@ -101,6 +105,8 @@ def broadcast(creator, video_id):
                     print(f"Unexpected input! {error}")
                     OPEN_STREAMS_USERS[video_id].remove(read_user.get_socket())
                     if read_user in write_users:
+                        write_users.remove(read_user)
+                    if read_user in read_users:
                         write_users.remove(read_user)
                     close_user(read_user)
         if views_old != len(OPEN_STREAMS_USERS[video_id]):
@@ -206,6 +212,7 @@ def new_user(user):
         close_user(user)
     except Exception as error:
         # Client sent invalid messages
+        print(f"Client sent an invalid message, and was disconnected. Error: {error}")
         close_user(user)
 
 
@@ -312,8 +319,7 @@ def establish_secure_connection(client_socket, rsa_keys):
         private_key, public_key = rsa_keys
         message = {"type": "rsa_key", "key": public_key}
         Communication.send_message_unsecure(client_socket, message)
-        rsa_cypher = PKCS1_OAEP.new(RSA.importKey(private_key))
-        message = Communication.recv_message_rsa(client_socket, rsa_cypher)
+        message = Communication.recv_message_rsa(client_socket, private_key)
         aes_key = message["key"]
         aes_iv = message["iv"]
         aes_cypher = AESCypher(aes_iv, aes_key)
@@ -330,7 +336,7 @@ def main():
     :return:
     """
     # generate rsa keys
-    rsa_keys = Communication.generate_rsa_keys()  # private_key, public_key
+    rsa_keys = RsaService.generate_rsa_keys()  # private_key, public_key
     # Connect to clients
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     server_socket.bind(('0.0.0.0', PORT))  # Bind to a specific address and port

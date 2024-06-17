@@ -18,7 +18,7 @@ def add_video(video_name, creator):
     :return: The video's ID, for future use with the system
     :rtype: int
     """
-    print("[-W-] Video DB Access")
+    # print("[-W-] Video DB Access")
     with DB_LOCK:
         database = sqlite3.connect(DATABASE_LOCATION)
         db_cursor = database.cursor()
@@ -37,7 +37,7 @@ def get_latest():
     :return: A list of the most recent streams
     :rtype: list
     """
-    print("[-R-] Video DB Access")
+    # print("[-R-] Video DB Access")
     with DB_LOCK:
         database = sqlite3.connect(DATABASE_LOCATION)
         db_cursor = database.cursor()
@@ -57,7 +57,7 @@ def search_video(keyword):
     :return: A list of the most recent streams
     :rtype: list
     """
-    print("[-R-] Video DB Access")
+    # print("[-R-] Video DB Access")
     with DB_LOCK:
         database = sqlite3.connect(DATABASE_LOCATION)
         db_cursor = database.cursor()
@@ -77,7 +77,7 @@ def get_video_data(video_id):
     :return: The saved data for this video
     :rtype: list
     """
-    print("[-R-] Video DB Access")
+    # print("[-R-] Video DB Access")
     with DB_LOCK:
         database = sqlite3.connect(DATABASE_LOCATION)
         db_cursor = database.cursor()
@@ -97,7 +97,7 @@ def add_views(video_id, views_to_add):
     :param views_to_add: Number of views to increment the saved value
     :type views_to_add: int
     """
-    print("[-W-] Video DB Access")
+    # print("[-W-] Video DB Access")
     with DB_LOCK:
         database = sqlite3.connect(DATABASE_LOCATION)
         db_cursor = database.cursor()
@@ -116,7 +116,7 @@ def is_video_in_db(video_id):
     :return: True if the video is in the database, False otherwise
     :rtype: bool
     """
-    print("[-R-] Video DB Access")
+    # print("[-R-] Video DB Access")
     with DB_LOCK:
         database = sqlite3.connect(DATABASE_LOCATION)
         db_cursor = database.cursor()
@@ -137,7 +137,7 @@ def remove_video(video_id):
     :param video_id: The video's unique ID
     :type video_id: int
     """
-    print("[-W-] Video DB Access")
+    # print("[-W-] Video DB Access")
     with DB_LOCK:
         database = sqlite3.connect(DATABASE_LOCATION)
         db_cursor = database.cursor()

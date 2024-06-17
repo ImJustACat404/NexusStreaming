@@ -2,7 +2,7 @@ __author__ = "Ido Senn"
 
 from pygame_widgets.textbox import TextBox
 from pygame_widgets.button import Button
-from PygameObjects import Label, Image
+from PygameObjects import Label
 import Communication
 from UIConst import *
 import PopupService
@@ -17,12 +17,39 @@ class EmailVerifyForm:
         self.size_y = 500
         self.win = pygame.display.set_mode((self.size_x, self.size_y))
 
-        self.main_label = Label(self.win, "A code was sent to your email address. Please enter it here:", (0, 150), DEFAULT_FONT_SMALL, BLACK, "center")
-        self.code_textbox = TextBox(self.win, 250, 200, 100, 50, borderColour=BLUE, textColour=BLACK,
-                                    radius=10, borderThickness=3)
-        self.verify_button = Button(self.win, 200, 300, 200, 50, text="Verify",
-                                    font=DEFAULT_FONT_SMALL, radius=30, inactiveColour=BLUE, hoverColour=DARK_BLUE,
-                                    pressedColour=DARKER_BLUE, textColour=WHITE)
+        self.main_label = Label(
+            self.win,
+            "A code was sent to your email address. Please enter it here:",
+            (0, 150),
+            DEFAULT_FONT_SMALL,
+            BLACK,
+            "center"
+        )
+        self.code_textbox = TextBox(
+            self.win,
+            250,
+            200,
+            100,
+            50,
+            borderColour=BLUE,
+            textColour=BLACK,
+            radius=10,
+            borderThickness=3
+        )
+        self.verify_button = Button(
+            self.win,
+            200,
+            300,
+            200,
+            50,
+            text="Verify",
+            font=DEFAULT_FONT_SMALL,
+            radius=30,
+            inactiveColour=BLUE,
+            hoverColour=DARK_BLUE,
+            pressedColour=DARKER_BLUE,
+            textColour=WHITE
+        )
         self.hide()
 
     def show(self):

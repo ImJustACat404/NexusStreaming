@@ -17,17 +17,100 @@ class NewStreamForm:
         self.size_x = 800
         self.size_y = 600
         self.win = pygame.display.set_mode((self.size_x, self.size_y))
-        self.window_title = Label(self.win, "New Stream", (0, 50), DEFAULT_FONT_BIG, BLUE, align="center")
-        self.title_label = Label(self.win, "Title:", (100, 150), DEFAULT_FONT, BLUE)
-        self.title_textbox = TextBox(self.win, 200, 135, 400, 50, radius=10, borderColour=BLUE)
-        self.capture_label = Label(self.win, "Capture mode:", (100, 250), DEFAULT_FONT, BLUE)
-        self.capture_dropdown = Dropdown(self.win, 300, 230, 200, 50, "Select device", ["Camera", "Screen"], font=DEFAULT_FONT_SMALL, borderRadius=10, textColour=RED)
-        self.start_button = Button(self.win, 250, 400, 300, 100, text="start", textColour=BLUE, font=DEFAULT_FONT_BIG, radius=10)
-        self.closing_message = Label(self.win, "Closing...", (0, 400), DEFAULT_FONT_BIG, BLUE, align="center")
-        self.stop_button = Button(self.win, 250, 400, 300, 100, text="stop", textColour=RED, font=DEFAULT_FONT_BIG, radius=10)
+        self.window_title = Label(
+            self.win,
+            "New Stream",
+            (0, 50),
+            DEFAULT_FONT_BIG,
+            BLUE, align="center"
+        )
+        self.live_label = Label(
+            self.win,
+            "Now live!",
+            (0, 50),
+            DEFAULT_FONT_BIG,
+            BLUE,
+            align="center"
+        )
+        self.title_label = Label(
+            self.win,
+            "Title:",
+            (100, 150),
+            DEFAULT_FONT,
+            BLUE
+        )
+        self.title_textbox = TextBox(
+            self.win,
+            200,
+            135,
+            400,
+            50,
+            radius=10,
+            borderColour=BLUE
+        )
+        self.capture_label = Label(
+            self.win,
+            "Capture mode:",
+            (100, 250),
+            DEFAULT_FONT,
+            BLUE
+        )
+        self.capture_dropdown = Dropdown(
+            self.win,
+            300,
+            230,
+            200,
+            50,
+            "Select device",
+            ["Camera", "Screen"],
+            font=DEFAULT_FONT_SMALL,
+            borderRadius=10,
+            textColour=RED
+        )
+        self.start_button = Button(
+            self.win,
+            250,
+            400,
+            300,
+            100,
+            text="start",
+            textColour=BLUE,
+            font=DEFAULT_FONT_BIG,
+            radius=10
+        )
+
+        self.closing_message = Label(
+            self.win,
+            "Closing...",
+            (0, 400),
+            DEFAULT_FONT_BIG,
+            BLUE,
+            align="center"
+        )
+        self.stop_button = Button(
+            self.win,
+            250,
+            400,
+            300,
+            100,
+            text="stop",
+            textColour=RED,
+            font=DEFAULT_FONT_BIG,
+            radius=10
+        )
         unscaled_back_icon = pygame.image.load(BACK_ICON)
-        self.back_button = Button(self.win, 20, 540, 80, 40, image=pygame.transform.scale(unscaled_back_icon, (30, 30)),
-                                  colour=BLUE, radius=10, hoverColour=DARK_BLUE, pressedColour=DARKER_BLUE)
+        self.back_button = Button(
+            self.win,
+            20,
+            540,
+            80,
+            40,
+            image=pygame.transform.scale(unscaled_back_icon, (30, 30)),
+            colour=BLUE,
+            radius=10,
+            hoverColour=DARK_BLUE,
+            pressedColour=DARKER_BLUE
+        )
         self.hide()
 
     def show(self):
@@ -55,6 +138,7 @@ class NewStreamForm:
         self.stop_button.hide()
         self.back_button.hide()
         self.closing_message.hide()
+        self.live_label.hide()
 
     def get_size(self):
         """
@@ -80,10 +164,20 @@ class NewStreamForm:
         """
         self.start_button.hide()
         self.back_button.hide()
+        self.window_title.hide()
+        self.title_label.hide()
+        self.title_textbox.hide()
+        self.capture_label.hide()
+        self.capture_dropdown.hide()
+
         message = {"type": "broadcast", "title": self.title_textbox.getText()}
         Communication.send_message_aes(self.server_socket, message, self.aes_cypher)
-        threading.Thread(target=stream_start_callback, args=(self.server_socket, self.aes_cypher,  self.capture_dropdown.getSelected() == "Screen")).start()
+        threading.Thread(
+            target=stream_start_callback,
+            args=(self.server_socket, self.aes_cypher,  self.capture_dropdown.getSelected() == "Screen")
+        ).start()
         self.stop_button.show()
+        self.live_label.show()
 
     def stop_button_press(self, stream_stop_event):
         """

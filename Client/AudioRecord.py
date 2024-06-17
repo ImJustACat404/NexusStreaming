@@ -16,8 +16,13 @@ class AudioStream:
         global FORMAT, CHANNELS, RATE, CHUNK
         # Create a PyAudio stream for input (microphone)
         self.pa_obj = pyaudio.PyAudio()
-        self.input_stream = self.pa_obj.open(format=FORMAT, channels=CHANNELS, rate=RATE, input=True,
-                                             frames_per_buffer=CHUNK)
+        self.input_stream = self.pa_obj.open(
+            format=FORMAT,
+            channels=CHANNELS,
+            rate=RATE,
+            input=True,
+            frames_per_buffer=CHUNK
+        )
 
     def close(self):
         """

@@ -30,7 +30,7 @@ def send_verification_code(recipient_email, code):
     :param recipient_email: The client's email adress
     :type recipient_email: str
     :param code: The verification code
-    :type code: int
+    :type code: str
     """
     email_subject = "Welcome to Nexus!"
     email_body = f"Welcome to nexus streaming!\n\nYour verification code is: {code}"
