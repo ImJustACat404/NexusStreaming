@@ -338,7 +338,7 @@ def main():
     # generate rsa keys
     rsa_keys = RsaService.generate_rsa_keys()  # private_key, public_key
     # Connect to clients
-    server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM) # Create server socket
     server_socket.bind(('0.0.0.0', PORT))  # Bind to a specific address and port
     server_socket.listen()  # Listen for incoming connections
     while True:
